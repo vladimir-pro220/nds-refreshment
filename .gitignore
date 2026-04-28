@@ -1,0 +1,64 @@
+# ── Variables d'environnement ──────────────────────────
+.env
+.env.*
+
+# ── Base de données ────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+
+# ── Python ─────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+
+# ── Environnement virtuel ──────────────────────────────
+venv/
+env/
+ENV/
+.venv/
+
+# ── Uploads (photos produits) ──────────────────────────
+static/uploads/*
+!static/uploads/.gitkeep
+
+# ── VS Code ────────────────────────────────────────────
+.vscode/
+*.code-workspace
+
+# ── Système Windows ────────────────────────────────────
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# ── Système Mac ────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ── Logs ───────────────────────────────────────────────
+*.log
+logs/
+
+# ── Tests ──────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ── Qualité du code ────────────────────────────────────
+.flake8
+.black
