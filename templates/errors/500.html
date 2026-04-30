@@ -1,0 +1,41 @@
+<!--
+FICHIER : templates/errors/500.html
+RÔLE    : Page d'erreur 500 — erreur interne du serveur
+APPORT  : Affiche un message rassurant en cas d'erreur serveur
+          sans exposer de détails techniques sensibles.
+DÉPENDANCES : base.html, errors.page_500
+-->
+{% extends 'base.html' %}
+
+{% block title %}Erreur Serveur — ND's REFRESHMENT{% endblock %}
+
+{% block content %}
+
+<section class="error-section py-5">
+  <div class="container text-center py-5">
+
+    <div class="error-code">500</div>
+
+    <h2 class="error-titre mt-3">
+      Une erreur inattendue s'est produite.
+    </h2>
+
+    <p class="error-desc text-muted">
+      Notre équipe technique a été notifiée et travaille
+      à résoudre le problème. Veuillez réessayer dans quelques
+      instants.
+    </p>
+
+    <div class="d-flex gap-3 justify-content-center flex-wrap mt-4">
+      <a href="{{ url_for('client.index') }}" class="btn-hero-primary">
+        <i class="bi bi-house me-2"></i>Retour à l'Accueil
+      </a>
+      <a href="javascript:history.back()" class="btn-hero-secondary">
+        <i class="bi bi-arrow-left me-2"></i>Page Précédente
+      </a>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}

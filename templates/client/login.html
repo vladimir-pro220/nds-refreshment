@@ -1,0 +1,129 @@
+<!--
+FICHIER : templates/client/login.html
+RÔLE    : Page de connexion client
+APPORT  : Formulaire de connexion sécurisé avec protection CSRF,
+          redirection intelligente et lien vers l'inscription.
+DÉPENDANCES : base.html, auth.login, User, anonymous_required
+-->
+{% extends 'base.html' %}
+
+{% block title %}Connexion — ND's REFRESHMENT{% endblock %}
+
+{% block content %}
+
+<section class="auth-section py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-5 col-md-7">
+
+        <!-- Card connexion -->
+        <div class="auth-card">
+
+          <!-- En-tête -->
+          <div class="auth-header text-center mb-4">
+            <div class="auth-logo">
+              <span class="brand-nd">ND's</span>
+              <span class="brand-refresh">REFRESHMENT</span>
+            </div>
+            <h2 class="auth-titre mt-3">Connexion</h2>
+            <p class="auth-subtitle text-muted">
+              Accédez à votre espace personnel
+            </p>
+          </div>
+
+          <!-- Formulaire -->
+          <form action="{{ url_for('auth.login') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+            <!-- Email -->
+            <div class="mb-3">
+              <label for="email" class="form-label">
+                <i class="bi bi-envelope me-2"></i>Adresse Email
+              </label>
+              <input type="email" name="email" id="email"
+                     class="form-control auth-input"
+                     placeholder="votre@email.com"
+                     required autofocus/>
+            </div>
+
+            <!-- Mot de passe -->
+            <div class="mb-3">
+              <label for="password" class="form-label">
+                <i class="bi bi-lock me-2"></i>Mot de passe
+              </label>
+              <div class="input-group">
+                <input type="password" name="password" id="password"
+                       class="form-control auth-input"
+                       placeholder="Votre mot de passe"
+                       required/>
+                <button type="button" class="btn btn-toggle-pwd"
+                        id="togglePassword">
+                  <i class="bi bi-eye" id="eyeIcon"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Se souvenir de moi -->
+            <div class="mb-4 d-flex justify-content-between align-items-center">
+              <div class="form-check">
+                <input type="checkbox" name="remember"
+                       id="remember" class="form-check-input"/>
+                <label for="remember" class="form-check-label">
+                  Se souvenir de moi
+                </label>
+              </div>
+            </div>
+
+            <!-- Bouton connexion -->
+            <button type="submit" class="btn-auth w-100">
+              <i class="bi bi-box-arrow-in-right me-2"></i>
+              Se Connecter
+            </button>
+
+          </form>
+
+          <!-- Séparateur -->
+          <div class="auth-separator my-4">
+            <span>Pas encore de compte ?</span>
+          </div>
+
+          <!-- Lien inscription -->
+          <a href="{{ url_for('auth.register') }}"
+             class="btn-auth-secondary w-100">
+            <i class="bi bi-person-plus me-2"></i>
+            Créer un Compte Gratuitement
+          </a>
+
+          <!-- Retour boutique -->
+          <div class="text-center mt-4">
+            <a href="{{ url_for('client.index') }}"
+               class="text-muted small">
+              <i class="bi bi-arrow-left me-1"></i>
+              Retourner à la boutique
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Afficher / masquer le mot de passe
+  document.getElementById('togglePassword').addEventListener('click', function() {
+    const pwd = document.getElementById('password');
+    const icon = document.getElementById('eyeIcon');
+    if (pwd.type === 'password') {
+      pwd.type = 'text';
+      icon.classList.replace('bi-eye', 'bi-eye-slash');
+    } else {
+      pwd.type = 'password';
+      icon.classList.replace('bi-eye-slash', 'bi-eye');
+    }
+  });
+</script>
+{% endblock %}

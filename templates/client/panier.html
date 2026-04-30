@@ -1,0 +1,277 @@
+<!--
+FICHIER : templates/client/panier.html
+RÔLE    : Page du panier d'achat client
+APPORT  : Affiche les articles du panier avec quantités modifiables,
+          sous-totaux, total général et accès au paiement.
+DÉPENDANCES : base.html, panier.panier, session panier, Product, Promotion
+-->
+{% extends 'base.html' %}
+
+{% block title %}Mon Panier — ND's REFRESHMENT{% endblock %}
+
+{% block content %}
+
+<!-- ═══════════════════════════════════════════════════
+     EN-TÊTE
+════════════════════════════════════════════════════ -->
+<section class="page-header py-4">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between">
+      <div>
+        <h1 class="page-title">
+          <i class="bi bi-bag me-3"></i>Mon Panier
+        </h1>
+        <p class="page-subtitle text-muted">
+          {% if count > 0 %}
+            {{ count }} article(s) dans votre panier
+          {% else %}
+            Votre panier est vide
+          {% endif %}
+        </p>
+      </div>
+      <a href="{{ url_for('client.produits') }}" class="btn-retour">
+        <i class="bi bi-arrow-left me-2"></i>Continuer mes achats
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     CONTENU PANIER
+════════════════════════════════════════════════════ -->
+<section class="panier-section py-5">
+  <div class="container">
+
+    {% if lignes %}
+      <div class="row g-4">
+
+        <!-- ── LISTE DES ARTICLES ─────────────────── -->
+        <div class="col-lg-8">
+
+          <!-- En-tête tableau -->
+          <div class="panier-header d-none d-md-grid">
+            <span>Produit</span>
+            <span class="text-center">Prix unitaire</span>
+            <span class="text-center">Quantité</span>
+            <span class="text-center">Sous-total</span>
+            <span></span>
+          </div>
+
+          <!-- Lignes articles -->
+          {% for ligne in lignes %}
+            <div class="panier-ligne">
+
+              <!-- Image + Nom -->
+              <div class="panier-produit">
+                <img src="{{ url_for('static', filename='uploads/' + ligne.product.image) }}"
+                     alt="{{ ligne.product.nom }}" class="panier-img"
+                     onerror="this.src='{{ url_for('static', filename='img/default.jpg') }}'"/>
+                <div class="panier-info">
+                  <a href="{{ url_for('client.produit_detail', product_id=ligne.product.id) }}"
+                     class="panier-nom">
+                    {{ ligne.product.nom }}
+                  </a>
+                  <span class="panier-categorie">
+                    {{ ligne.product.categorie|capitalize }}
+                  </span>
+                  {% if ligne.promo %}
+                    <span class="panier-promo-badge">
+                      <i class="bi bi-tag-fill me-1"></i>
+                      {{ ligne.promo.formatted_pourcentage() }} — {{ ligne.promo.titre }}
+                    </span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Prix unitaire -->
+              <div class="panier-prix text-center">
+                {% if ligne.promo %}
+                  <span class="prix-barre-sm">
+                    {{ ligne.product.formatted_price() }}
+                  </span><br/>
+                {% endif %}
+                <span class="prix-actuel-sm">
+                  {{ "{:,.0f} FCFA".format(ligne.prix) }}
+                </span>
+              </div>
+
+              <!-- Quantité modifiable -->
+              <div class="panier-quantite text-center">
+                <form action="{{ url_for('panier.modifier', product_id=ligne.product.id) }}"
+                      method="POST" class="qty-form">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  <div class="qty-wrapper">
+                    <button type="button" class="btn-qty-sm btn-minus-panier">
+                      <i class="bi bi-dash"></i>
+                    </button>
+                    <input type="number" name="quantite"
+                           class="qty-input-sm" value="{{ ligne.quantite }}"
+                           min="1" max="{{ ligne.product.stock }}"/>
+                    <button type="button" class="btn-qty-sm btn-plus-panier">
+                      <i class="bi bi-plus"></i>
+                    </button>
+                  </div>
+                  <button type="submit" class="btn-update-qty mt-1">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Mettre à jour
+                  </button>
+                </form>
+              </div>
+
+              <!-- Sous-total -->
+              <div class="panier-sous-total text-center">
+                <strong>{{ "{:,.0f} FCFA".format(ligne.sous_total) }}</strong>
+              </div>
+
+              <!-- Supprimer -->
+              <div class="panier-supprimer text-center">
+                <form action="{{ url_for('panier.supprimer', product_id=ligne.product.id) }}"
+                      method="POST">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  <button type="submit" class="btn-supprimer-ligne"
+                          title="Retirer du panier"
+                          onclick="return confirm('Retirer {{ ligne.product.nom }} du panier ?')">
+                    <i class="bi bi-trash3"></i>
+                  </button>
+                </form>
+              </div>
+
+            </div>
+          {% endfor %}
+
+          <!-- Vider le panier -->
+          <div class="panier-footer-actions mt-4">
+            <form action="{{ url_for('panier.vider') }}" method="POST"
+                  class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <button type="submit" class="btn-vider-panier"
+                      onclick="return confirm('Vider complètement votre panier ?')">
+                <i class="bi bi-trash3 me-2"></i>Vider le panier
+              </button>
+            </form>
+            <a href="{{ url_for('client.produits') }}" class="btn-continuer">
+              <i class="bi bi-arrow-left me-2"></i>Continuer mes achats
+            </a>
+          </div>
+
+        </div>
+
+        <!-- ── RÉCAPITULATIF & PAIEMENT ───────────── -->
+        <div class="col-lg-4">
+          <div class="panier-recap sticky-top">
+            <h5 class="recap-titre">Récapitulatif</h5>
+
+            <!-- Détail des articles -->
+            <div class="recap-lignes">
+              {% for ligne in lignes %}
+                <div class="recap-ligne">
+                  <span class="recap-nom">
+                    {{ ligne.product.nom }}
+                    <small class="text-muted">x{{ ligne.quantite }}</small>
+                  </span>
+                  <span class="recap-montant">
+                    {{ "{:,.0f} FCFA".format(ligne.sous_total) }}
+                  </span>
+                </div>
+              {% endfor %}
+            </div>
+
+            <hr class="recap-divider"/>
+
+            <!-- Total -->
+            <div class="recap-total">
+              <span>Total</span>
+              <strong class="total-montant">
+                {{ "{:,.0f} FCFA".format(total) }}
+              </strong>
+            </div>
+
+            <!-- Livraison -->
+            <div class="recap-livraison mt-3">
+              <i class="bi bi-truck me-2"></i>
+              <small>Livraison calculée à l'étape suivante</small>
+            </div>
+
+            <!-- Bouton paiement -->
+            {% if current_user.is_authenticated %}
+              <a href="{{ url_for('paiement.paiement') }}"
+                 class="btn-commander w-100 mt-4">
+                <i class="bi bi-lock me-2"></i>
+                Passer la Commande
+              </a>
+            {% else %}
+              <div class="recap-login mt-4">
+                <p class="text-muted small mb-2">
+                  <i class="bi bi-info-circle me-1"></i>
+                  Connectez-vous pour finaliser votre commande.
+                </p>
+                <a href="{{ url_for('auth.login') }}"
+                   class="btn-commander w-100">
+                  <i class="bi bi-box-arrow-in-right me-2"></i>
+                  Se Connecter pour Commander
+                </a>
+              </div>
+            {% endif %}
+
+            <!-- Garanties -->
+            <div class="recap-garanties mt-4">
+              <div class="garantie-item">
+                <i class="bi bi-shield-check text-success me-2"></i>
+                <small>Paiement 100% sécurisé</small>
+              </div>
+              <div class="garantie-item mt-2">
+                <i class="bi bi-truck text-success me-2"></i>
+                <small>Livraison rapide à Douala et Yaoundé</small>
+              </div>
+              <div class="garantie-item mt-2">
+                <i class="bi bi-leaf text-success me-2"></i>
+                <small>Produits 100% naturels et frais</small>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    {% else %}
+      <!-- Panier vide -->
+      <div class="empty-cart text-center py-5">
+        <i class="bi bi-bag-x fs-1 text-muted"></i>
+        <h4 class="mt-3">Votre panier est vide</h4>
+        <p class="text-muted">
+          Découvrez nos produits et ajoutez vos favoris au panier.
+        </p>
+        <a href="{{ url_for('client.produits') }}" class="btn-hero-primary mt-3">
+          <i class="bi bi-bag me-2"></i>Découvrir nos Produits
+        </a>
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Gestion des boutons +/- dans le panier
+  document.querySelectorAll('.panier-ligne').forEach(ligne => {
+    const input = ligne.querySelector('.qty-input-sm');
+    const btnMinus = ligne.querySelector('.btn-minus-panier');
+    const btnPlus = ligne.querySelector('.btn-plus-panier');
+
+    if (!input || !btnMinus || !btnPlus) return;
+
+    btnMinus.addEventListener('click', () => {
+      const val = parseInt(input.value);
+      if (val > 1) input.value = val - 1;
+    });
+
+    btnPlus.addEventListener('click', () => {
+      const val = parseInt(input.value);
+      const max = parseInt(input.max);
+      if (val < max) input.value = val + 1;
+    });
+  });
+</script>
+{% endblock %}

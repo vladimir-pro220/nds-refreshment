@@ -1,0 +1,260 @@
+<!--
+FICHIER : templates/client/paiement.html
+RÔLE    : Page de paiement et validation de commande
+APPORT  : Affiche le formulaire de livraison, le récapitulatif final
+          et valide la commande en base de données.
+DÉPENDANCES : base.html, paiement.paiement, Order, OrderItem, login_required_custom
+-->
+{% extends 'base.html' %}
+
+{% block title %}Paiement — ND's REFRESHMENT{% endblock %}
+
+{% block content %}
+
+<!-- ═══════════════════════════════════════════════════
+     EN-TÊTE
+════════════════════════════════════════════════════ -->
+<section class="page-header py-4">
+  <div class="container">
+    <h1 class="page-title">
+      <i class="bi bi-lock me-3"></i>Finaliser la Commande
+    </h1>
+
+    <!-- Étapes de commande -->
+    <div class="commande-steps d-flex gap-3 mt-3">
+      <div class="step done">
+        <span class="step-num"><i class="bi bi-check"></i></span>
+        <span class="step-label">Panier</span>
+      </div>
+      <div class="step-arrow"><i class="bi bi-chevron-right"></i></div>
+      <div class="step active">
+        <span class="step-num">2</span>
+        <span class="step-label">Livraison</span>
+      </div>
+      <div class="step-arrow"><i class="bi bi-chevron-right"></i></div>
+      <div class="step">
+        <span class="step-num">3</span>
+        <span class="step-label">Confirmation</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     CONTENU PAIEMENT
+════════════════════════════════════════════════════ -->
+<section class="paiement-section py-5">
+  <div class="container">
+    <div class="row g-4">
+
+      <!-- ── FORMULAIRE LIVRAISON ───────────────── -->
+      <div class="col-lg-7">
+        <div class="paiement-form-card">
+          <h5 class="paiement-form-titre">
+            <i class="bi bi-truck me-2"></i>
+            Informations de Livraison
+          </h5>
+
+          <form action="{{ url_for('paiement.paiement') }}"
+                method="POST" id="formPaiement">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+            <!-- Infos client (pré-remplies) -->
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label class="form-label">Prénom</label>
+                <input type="text" class="form-control"
+                       value="{{ current_user.prenom }}" readonly/>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Nom</label>
+                <input type="text" class="form-control"
+                       value="{{ current_user.nom }}" readonly/>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control"
+                       value="{{ current_user.email }}" readonly/>
+              </div>
+            </div>
+
+            <hr class="my-4"/>
+
+            <!-- Adresse livraison -->
+            <div class="mb-3">
+              <label class="form-label">
+                Adresse de livraison <span class="text-danger">*</span>
+              </label>
+              <textarea name="adresse_livraison" class="form-control"
+                        rows="3" required
+                        placeholder="Ex: Douala, Akwa, Rue des Palmiers, Immeuble Soleil, Apt 3B">
+              </textarea>
+              <small class="text-muted">
+                <i class="bi bi-geo-alt me-1"></i>
+                Nous livrons à Douala et Yaoundé
+              </small>
+            </div>
+
+            <!-- Téléphone -->
+            <div class="mb-3">
+              <label class="form-label">
+                Téléphone <span class="text-danger">*</span>
+              </label>
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="bi bi-phone"></i> +237
+                </span>
+                <input type="tel" name="telephone" class="form-control"
+                       required placeholder="6XX XXX XXX"/>
+              </div>
+            </div>
+
+            <!-- Note optionnelle -->
+            <div class="mb-4">
+              <label class="form-label">
+                Note pour le livreur (optionnel)
+              </label>
+              <textarea name="note_client" class="form-control" rows="2"
+                        placeholder="Instructions spéciales, point de repère...">
+              </textarea>
+            </div>
+
+            <!-- Zone livraison info -->
+            <div class="livraison-info mb-4">
+              <h6 class="livraison-info-titre">
+                <i class="bi bi-info-circle me-2"></i>
+                Notre Logistique
+              </h6>
+              <ul class="livraison-liste">
+                <li>
+                  <i class="bi bi-check2 me-2 text-success"></i>
+                  Livraison sous 24h pour les commandes en gros
+                </li>
+                <li>
+                  <i class="bi bi-check2 me-2 text-success"></i>
+                  Chaîne du froid irréprochable garantie
+                </li>
+                <li>
+                  <i class="bi bi-check2 me-2 text-success"></i>
+                  Emballages écologiques et isothermes
+                </li>
+                <li>
+                  <i class="bi bi-check2 me-2 text-success"></i>
+                  Zones desservies : Douala et Yaoundé
+                </li>
+              </ul>
+            </div>
+
+            <button type="submit" class="btn-confirmer-commande w-100">
+              <i class="bi bi-check-circle me-2"></i>
+              Confirmer ma Commande —
+              {{ "{:,.0f} FCFA".format(total) }}
+            </button>
+
+          </form>
+        </div>
+      </div>
+
+      <!-- ── RÉCAPITULATIF COMMANDE ─────────────── -->
+      <div class="col-lg-5">
+        <div class="recap-commande sticky-top">
+          <h5 class="recap-titre">
+            <i class="bi bi-receipt me-2"></i>
+            Récapitulatif
+          </h5>
+
+          <!-- Articles -->
+          <div class="recap-articles">
+            {% for ligne in lignes %}
+              <div class="recap-article">
+                <div class="recap-article-img">
+                  <img src="{{ url_for('static', filename='uploads/' + ligne.product.image) }}"
+                       alt="{{ ligne.product.nom }}"
+                       onerror="this.src='{{ url_for('static', filename='img/default.jpg') }}'"/>
+                  <span class="recap-article-qty">{{ ligne.quantite }}</span>
+                </div>
+                <div class="recap-article-info">
+                  <span class="recap-article-nom">{{ ligne.product.nom }}</span>
+                  {% if ligne.promo %}
+                    <span class="recap-article-promo">
+                      {{ ligne.promo.formatted_pourcentage() }}
+                    </span>
+                  {% endif %}
+                </div>
+                <span class="recap-article-prix">
+                  {{ "{:,.0f} FCFA".format(ligne.sous_total) }}
+                </span>
+              </div>
+            {% endfor %}
+          </div>
+
+          <hr class="recap-divider"/>
+
+          <!-- Sous-total -->
+          <div class="recap-row">
+            <span>Sous-total</span>
+            <span>{{ "{:,.0f} FCFA".format(total) }}</span>
+          </div>
+
+          <!-- Livraison -->
+          <div class="recap-row">
+            <span>Livraison</span>
+            <span class="text-success">À définir</span>
+          </div>
+
+          <hr class="recap-divider"/>
+
+          <!-- Total final -->
+          <div class="recap-total-final">
+            <span>Total</span>
+            <strong>{{ "{:,.0f} FCFA".format(total) }}</strong>
+          </div>
+
+          <!-- Sécurité -->
+          <div class="recap-securite mt-4">
+            <div class="securite-item">
+              <i class="bi bi-shield-lock-fill text-success"></i>
+              <small>Commande 100% sécurisée</small>
+            </div>
+            <div class="securite-item mt-2">
+              <i class="bi bi-headset text-success"></i>
+              <small>Support client disponible</small>
+            </div>
+          </div>
+
+          <!-- Modifier le panier -->
+          <a href="{{ url_for('panier.panier') }}"
+             class="btn-modifier-panier w-100 mt-3">
+            <i class="bi bi-pencil me-2"></i>Modifier le Panier
+          </a>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Confirmation avant soumission du formulaire
+  document.getElementById('formPaiement').addEventListener('submit', function(e) {
+    const adresse = document.querySelector('[name="adresse_livraison"]').value.trim();
+    const telephone = document.querySelector('[name="telephone"]').value.trim();
+
+    if (!adresse || !telephone) {
+      e.preventDefault();
+      alert('Veuillez renseigner l\'adresse de livraison et le téléphone.');
+      return;
+    }
+
+    const confirmed = confirm(
+      'Confirmer votre commande ?\n\n' +
+      'Une fois validée, votre commande sera transmise à notre équipe.'
+    );
+    if (!confirmed) e.preventDefault();
+  });
+</script>
+{% endblock %}

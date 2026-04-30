@@ -1,0 +1,349 @@
+<!--
+FICHIER : templates/client/apropos.html
+RÔLE    : Page À propos de ND's REFRESHMENT
+APPORT  : Présente l'histoire, les valeurs, l'équipe et la localisation
+          de l'entreprise pour renforcer la confiance des clients.
+DÉPENDANCES : base.html, client.apropos
+-->
+{% extends 'base.html' %}
+
+{% block title %}À Propos — ND's REFRESHMENT{% endblock %}
+
+{% block content %}
+
+<!-- ═══════════════════════════════════════════════════
+     HERO À PROPOS
+════════════════════════════════════════════════════ -->
+<section class="apropos-hero py-5">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <span class="section-badge">Notre Histoire</span>
+        <h1 class="apropos-titre mt-2">
+          L'Agroalimentaire<br/>
+          <span class="hero-accent">Réinventé.</span>
+        </h1>
+        <p class="apropos-intro">
+          ND's REFRESHMENT est née d'une passion profonde pour les saveurs
+          naturelles d'Afrique et d'une vision claire : proposer des produits
+          agroalimentaires innovants, sains et accessibles au cœur de Douala,
+          Cameroun.
+        </p>
+        <p class="apropos-intro">
+          Fondée avec l'ambition de révolutionner la consommation de jus
+          naturels et de services traiteur en Afrique centrale, notre
+          entreprise s'est rapidement imposée comme une référence de qualité
+          et d'innovation dans le secteur agroalimentaire camerounais.
+        </p>
+      </div>
+      <div class="col-lg-6">
+        <div class="apropos-img-wrapper">
+          <div class="apropos-img-deco"></div>
+          <img src="{{ url_for('static', filename='img/hero/about.jpg') }}"
+               alt="ND's REFRESHMENT — Notre histoire"
+               class="apropos-img"
+               onerror="this.style.display='none'"/>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     CHIFFRES CLÉS
+════════════════════════════════════════════════════ -->
+<section class="apropos-chiffres py-5">
+  <div class="container">
+    <div class="row g-4 text-center">
+      <div class="col-lg-3 col-md-6">
+        <div class="chiffre-card">
+          <span class="chiffre-num">100%</span>
+          <span class="chiffre-label">Fruits Naturels</span>
+          <p class="chiffre-desc">
+            Sans conservateurs ni colorants artificiels
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="chiffre-card">
+          <span class="chiffre-num">5+</span>
+          <span class="chiffre-label">Saveurs Signature</span>
+          <p class="chiffre-desc">
+            Ananas Gingembre, Baobab, Passion et plus
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="chiffre-card">
+          <span class="chiffre-num">2</span>
+          <span class="chiffre-label">Villes Desservies</span>
+          <p class="chiffre-desc">
+            Douala et Yaoundé avec livraison rapide
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="chiffre-card">
+          <span class="chiffre-num">★★★★★</span>
+          <span class="chiffre-label">Satisfaction Client</span>
+          <p class="chiffre-desc">
+            La qualité au cœur de chaque produit
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     NOS VALEURS
+════════════════════════════════════════════════════ -->
+<section class="apropos-valeurs py-5">
+  <div class="container">
+    <div class="section-header text-center mb-5">
+      <span class="section-badge">Notre ADN</span>
+      <h2 class="section-title">Nos Valeurs Fondamentales</h2>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="valeur-card">
+          <div class="valeur-icon">
+            <i class="bi bi-leaf-fill"></i>
+          </div>
+          <h5 class="valeur-titre">Naturalité</h5>
+          <p class="valeur-desc">
+            Chaque produit ND's REFRESHMENT est élaboré exclusivement
+            à partir de fruits frais d'Afrique, sans sucres ajoutés,
+            sans conservateurs et sans colorants artificiels. La nature
+            est notre premier ingrédient.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="valeur-card">
+          <div class="valeur-icon">
+            <i class="bi bi-lightbulb-fill"></i>
+          </div>
+          <h5 class="valeur-titre">Innovation</h5>
+          <p class="valeur-desc">
+            Nous repoussons constamment les frontières du goût en créant
+            des associations de saveurs inédites et audacieuses. Notre
+            gamme Ananas Gingembre ou Baobab Pur en sont les parfaites
+            illustrations.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="valeur-card">
+          <div class="valeur-icon">
+            <i class="bi bi-shield-fill-check"></i>
+          </div>
+          <h5 class="valeur-titre">Excellence</h5>
+          <p class="valeur-desc">
+            De la sélection des fruits à la livraison chez vous, chaque
+            étape est contrôlée avec rigueur. Nos normes d'hygiène et
+            de qualité sont au niveau des standards internationaux les
+            plus exigeants.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="valeur-card">
+          <div class="valeur-icon">
+            <i class="bi bi-people-fill"></i>
+          </div>
+          <h5 class="valeur-titre">Service Client</h5>
+          <p class="valeur-desc">
+            Votre satisfaction est notre priorité absolue. Notre équipe
+            est disponible pour répondre à toutes vos questions et
+            s'assurer que chaque commande dépasse vos attentes.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="valeur-card">
+          <div class="valeur-icon">
+            <i class="bi bi-globe-africa"></i>
+          </div>
+          <h5 class="valeur-titre">Ancrage Local</h5>
+          <p class="valeur-desc">
+            Fiers de nos racines camerounaises, nous valorisons les
+            producteurs locaux et contribuons activement au développement
+            de l'économie agroalimentaire d'Afrique centrale.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="valeur-card">
+          <div class="valeur-icon">
+            <i class="bi bi-recycle"></i>
+          </div>
+          <h5 class="valeur-titre">Responsabilité</h5>
+          <p class="valeur-desc">
+            Conscients de notre impact environnemental, nous utilisons
+            des emballages écologiques et isothermes et travaillons
+            continuellement à réduire notre empreinte carbone.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     NOS PRODUITS PHARES
+════════════════════════════════════════════════════ -->
+<section class="apropos-produits py-5">
+  <div class="container">
+    <div class="section-header text-center mb-5">
+      <span class="section-badge">Nos Spécialités</span>
+      <h2 class="section-title">Nos Saveurs Signature</h2>
+    </div>
+    <div class="row g-3">
+      <div class="col-lg-4 col-md-6">
+        <div class="saveur-card">
+          <div class="saveur-icon">🍍</div>
+          <h6 class="saveur-nom">Ananas Gingembre</h6>
+          <p class="saveur-desc">
+            Notre best-seller. La douceur de l'ananas mariée au
+            piquant naturel du gingembre frais.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="saveur-card">
+          <div class="saveur-icon">🍍</div>
+          <h6 class="saveur-nom">Ananas Passion</h6>
+          <p class="saveur-desc">
+            Une explosion tropicale en bouche. L'ananas rencontre
+            la maracuja pour une saveur unique.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="saveur-card">
+          <div class="saveur-icon">🌿</div>
+          <h6 class="saveur-nom">Baobab Pur</h6>
+          <p class="saveur-desc">
+            Le superaliment africain par excellence. Riche en
+            vitamine C et en antioxydants naturels.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="saveur-card">
+          <div class="saveur-icon">🍍</div>
+          <h6 class="saveur-nom">Ananas Nature</h6>
+          <p class="saveur-desc">
+            La pureté de l'ananas frais du Cameroun, pressé à
+            froid pour préserver tous ses nutriments.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="saveur-card">
+          <div class="saveur-icon">🌺</div>
+          <h6 class="saveur-nom">Jus d'Oseille</h6>
+          <p class="saveur-desc">
+            La boisson traditionnelle camerounaise revisitée.
+            Fraîche, légèrement acidulée et riche en fer.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="saveur-card">
+          <div class="saveur-icon">🍰</div>
+          <h6 class="saveur-nom">Pâtisseries & Traiteur</h6>
+          <p class="saveur-desc">
+            Gâteaux artisanaux, gamelles saines et assortiments
+            gourmands pour tous vos événements.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     LOCALISATION
+════════════════════════════════════════════════════ -->
+<section class="apropos-localisation py-5">
+  <div class="container">
+    <div class="section-header text-center mb-5">
+      <span class="section-badge">Où Nous Trouver</span>
+      <h2 class="section-title">Notre Localisation</h2>
+    </div>
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-5">
+        <div class="localisation-info">
+          <div class="localisation-item">
+            <i class="bi bi-geo-alt-fill"></i>
+            <div>
+              <h6>Adresse</h6>
+              <p>Douala, Logpom — Entrée Chefferie<br/>
+                 Cameroun</p>
+            </div>
+          </div>
+          <div class="localisation-item">
+            <i class="bi bi-clock-fill"></i>
+            <div>
+              <h6>Horaires</h6>
+              <p>Lundi — Samedi : 07h00 — 20h00<br/>
+                 Dimanche : 08h00 — 18h00</p>
+            </div>
+          </div>
+          <div class="localisation-item">
+            <i class="bi bi-truck-fill"></i>
+            <div>
+              <h6>Zones de Livraison</h6>
+              <p>Douala (tous arrondissements)<br/>
+                 Yaoundé (sur commande)</p>
+            </div>
+          </div>
+          <div class="localisation-item">
+            <i class="bi bi-telephone-fill"></i>
+            <div>
+              <h6>Contact</h6>
+              <p>Disponible via la plateforme<br/>
+                 et nos réseaux sociaux</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="map-wrapper">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3979.7!2d9.7!3d4.05!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNMKwMDMnMDAuMCJOIDnCsDQyJzAwLjAiRQ!5e0!3m2!1sfr!2scm!4v1"
+            width="100%" height="350" style="border:0; border-radius:12px;"
+            allowfullscreen="" loading="lazy">
+          </iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     CTA FINAL
+════════════════════════════════════════════════════ -->
+<section class="section-cta py-5">
+  <div class="container text-center">
+    <h2 class="cta-titre">
+      Prêt à Découvrir Nos Saveurs ?
+    </h2>
+    <p class="cta-desc">
+      Commandez maintenant et faites livrer nos jus naturels
+      premium directement chez vous à Douala ou Yaoundé.
+    </p>
+    <div class="d-flex gap-3 justify-content-center flex-wrap">
+      <a href="{{ url_for('client.produits') }}" class="btn-cta">
+        <i class="bi bi-bag me-2"></i>Commander Maintenant
+      </a>
+      <a href="{{ url_for('client.avis') }}" class="btn-cta-outline">
+        <i class="bi bi-star me-2"></i>Voir les Avis Clients
+      </a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

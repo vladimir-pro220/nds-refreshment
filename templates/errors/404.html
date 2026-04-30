@@ -1,0 +1,40 @@
+<!--
+FICHIER : templates/errors/404.html
+RÔLE    : Page d'erreur 404 — ressource introuvable
+APPORT  : Affiche un message convivial quand une page n'existe pas
+          et propose des liens de retour pour ne pas perdre le visiteur.
+DÉPENDANCES : base.html, errors.page_404
+-->
+{% extends 'base.html' %}
+
+{% block title %}Page Introuvable — ND's REFRESHMENT{% endblock %}
+
+{% block content %}
+
+<section class="error-section py-5">
+  <div class="container text-center py-5">
+
+    <div class="error-code">404</div>
+
+    <h2 class="error-titre mt-3">
+      Oups ! Cette page est introuvable.
+    </h2>
+
+    <p class="error-desc text-muted">
+      La page que vous cherchez n'existe pas ou a été déplacée.
+      Pas d'inquiétude, nos jus naturels sont toujours là pour vous !
+    </p>
+
+    <div class="d-flex gap-3 justify-content-center flex-wrap mt-4">
+      <a href="{{ url_for('client.index') }}" class="btn-hero-primary">
+        <i class="bi bi-house me-2"></i>Retour à l'Accueil
+      </a>
+      <a href="{{ url_for('client.produits') }}" class="btn-hero-secondary">
+        <i class="bi bi-bag me-2"></i>Voir nos Produits
+      </a>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}

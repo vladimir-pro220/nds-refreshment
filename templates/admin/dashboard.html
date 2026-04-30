@@ -1,0 +1,254 @@
+<!--
+FICHIER : templates/admin/dashboard.html
+RÔLE    : Tableau de bord principal de l'interface admin
+APPORT  : Affiche les statistiques globales, les commandes récentes
+          et les avis en attente de validation.
+DÉPENDANCES : admin_base.html, admin.dashboard, get_stats, Order, Review
+-->
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}Dashboard — Administration ND's REFRESHMENT{% endblock %}
+
+{% block content %}
+
+<!-- ═══════════════════════════════════════════════════
+     EN-TÊTE
+════════════════════════════════════════════════════ -->
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-titre">
+      <i class="bi bi-speedometer2 me-2"></i>Tableau de Bord
+    </h1>
+    <p class="text-muted">
+      Bienvenue dans votre espace d'administration ND's REFRESHMENT.
+    </p>
+  </div>
+  <div class="admin-page-actions">
+    <a href="{{ url_for('admin.nouveau_produit') }}"
+       class="btn-admin-primary">
+      <i class="bi bi-plus-lg me-2"></i>Nouveau Produit
+    </a>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     CARTES STATISTIQUES
+════════════════════════════════════════════════════ -->
+<div class="row g-4 mb-5">
+
+  <div class="col-lg-3 col-md-6">
+    <div class="stat-card stat-blue">
+      <div class="stat-card-icon">
+        <i class="bi bi-people-fill"></i>
+      </div>
+      <div class="stat-card-info">
+        <span class="stat-card-num">{{ stats.total_clients }}</span>
+        <span class="stat-card-label">Clients Inscrits</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-3 col-md-6">
+    <div class="stat-card stat-green">
+      <div class="stat-card-icon">
+        <i class="bi bi-bag-fill"></i>
+      </div>
+      <div class="stat-card-info">
+        <span class="stat-card-num">{{ stats.total_produits }}</span>
+        <span class="stat-card-label">Produits en Catalogue</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-3 col-md-6">
+    <div class="stat-card stat-orange">
+      <div class="stat-card-icon">
+        <i class="bi bi-receipt"></i>
+      </div>
+      <div class="stat-card-info">
+        <span class="stat-card-num">{{ stats.total_commandes }}</span>
+        <span class="stat-card-label">Commandes Totales</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-3 col-md-6">
+    <div class="stat-card stat-purple">
+      <div class="stat-card-icon">
+        <i class="bi bi-star-fill"></i>
+      </div>
+      <div class="stat-card-info">
+        <span class="stat-card-num">{{ stats.total_avis }}</span>
+        <span class="stat-card-label">Avis Publiés</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     ALERTES IMPORTANTES
+════════════════════════════════════════════════════ -->
+<div class="row g-4 mb-5">
+
+  {% if stats.commandes_en_attente > 0 %}
+    <div class="col-md-6">
+      <div class="admin-alert admin-alert-warning">
+        <i class="bi bi-clock-fill me-2"></i>
+        <strong>{{ stats.commandes_en_attente }}</strong>
+        commande(s) en attente de traitement.
+        <a href="{{ url_for('admin.commandes', statut='en_attente') }}"
+           class="admin-alert-link ms-2">
+          Voir <i class="bi bi-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if avis_en_attente > 0 %}
+    <div class="col-md-6">
+      <div class="admin-alert admin-alert-info">
+        <i class="bi bi-chat-square-text-fill me-2"></i>
+        <strong>{{ avis_en_attente }}</strong>
+        avis en attente de validation.
+        <a href="{{ url_for('admin.avis', filtre='en_attente') }}"
+           class="admin-alert-link ms-2">
+          Valider <i class="bi bi-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     COMMANDES RÉCENTES
+════════════════════════════════════════════════════ -->
+<div class="admin-card mb-5">
+  <div class="admin-card-header">
+    <h5 class="admin-card-titre">
+      <i class="bi bi-receipt me-2"></i>Commandes Récentes
+    </h5>
+    <a href="{{ url_for('admin.commandes') }}" class="admin-card-link">
+      Voir tout <i class="bi bi-arrow-right ms-1"></i>
+    </a>
+  </div>
+
+  {% if commandes_recentes %}
+    <div class="table-responsive">
+      <table class="table admin-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Client</th>
+            <th>Articles</th>
+            <th>Total</th>
+            <th>Statut</th>
+            <th>Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in commandes_recentes %}
+            <tr>
+              <td><strong>#{{ order.id }}</strong></td>
+              <td>
+                <span class="admin-client-nom">
+                  {{ order.client.full_name() }}
+                </span>
+                <small class="d-block text-muted">
+                  {{ order.client.email }}
+                </small>
+              </td>
+              <td>
+                <span class="badge bg-secondary">
+                  {{ order.nombre_articles() }} article(s)
+                </span>
+              </td>
+              <td>
+                <strong>{{ order.formatted_total() }}</strong>
+              </td>
+              <td>
+                <span class="admin-statut statut-{{ order.statut }}">
+                  {% if order.statut == 'en_attente' %}
+                    <i class="bi bi-clock me-1"></i>En attente
+                  {% elif order.statut == 'confirmee' %}
+                    <i class="bi bi-check me-1"></i>Confirmée
+                  {% elif order.statut == 'en_preparation' %}
+                    <i class="bi bi-gear me-1"></i>En préparation
+                  {% elif order.statut == 'livree' %}
+                    <i class="bi bi-check-circle me-1"></i>Livrée
+                  {% elif order.statut == 'annulee' %}
+                    <i class="bi bi-x-circle me-1"></i>Annulée
+                  {% endif %}
+                </span>
+              </td>
+              <td>
+                <small class="text-muted">
+                  {{ order.created_at.strftime('%d/%m/%Y') }}
+                </small>
+              </td>
+              <td>
+                <a href="{{ url_for('admin.detail_commande',
+                           order_id=order.id) }}"
+                   class="btn-admin-sm">
+                  <i class="bi bi-eye"></i>
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  {% else %}
+    <div class="empty-state text-center py-4">
+      <i class="bi bi-receipt fs-2 text-muted"></i>
+      <p class="mt-2 text-muted">Aucune commande pour le moment.</p>
+    </div>
+  {% endif %}
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     RACCOURCIS RAPIDES
+════════════════════════════════════════════════════ -->
+<div class="admin-card">
+  <div class="admin-card-header">
+    <h5 class="admin-card-titre">
+      <i class="bi bi-lightning-fill me-2"></i>Actions Rapides
+    </h5>
+  </div>
+  <div class="row g-3 p-3">
+    <div class="col-lg-3 col-md-6">
+      <a href="{{ url_for('admin.nouveau_produit') }}"
+         class="admin-shortcut">
+        <i class="bi bi-plus-circle-fill"></i>
+        <span>Ajouter un Produit</span>
+      </a>
+    </div>
+    <div class="col-lg-3 col-md-6">
+      <a href="{{ url_for('admin.nouvelle_promotion') }}"
+         class="admin-shortcut">
+        <i class="bi bi-tag-fill"></i>
+        <span>Créer une Promotion</span>
+      </a>
+    </div>
+    <div class="col-lg-3 col-md-6">
+      <a href="{{ url_for('admin.nouvelle_banniere') }}"
+         class="admin-shortcut">
+        <i class="bi bi-image-fill"></i>
+        <span>Ajouter une Bannière (Publicité)</span>
+      </a>
+    </div>
+    <div class="col-lg-3 col-md-6">
+      <a href="{{ url_for('admin.avis', filtre='en_attente') }}"
+         class="admin-shortcut">
+        <i class="bi bi-chat-square-check-fill"></i>
+        <span>Valider les Avis</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

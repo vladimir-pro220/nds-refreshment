@@ -1,0 +1,266 @@
+<!--
+FICHIER : templates/admin/modifier_produit.html
+RÔLE    : Formulaire de modification d'un produit existant
+APPORT  : Permet à l'admin de modifier toutes les informations d'un produit
+          avec pré-remplissage automatique des champs et changement d'image.
+DÉPENDANCES : admin_base.html, admin.modifier_produit, Product, CATEGORIES
+-->
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}Modifier {{ product.nom }} — Administration ND's REFRESHMENT{% endblock %}
+
+{% block content %}
+
+<!-- ═══════════════════════════════════════════════════
+     EN-TÊTE
+════════════════════════════════════════════════════ -->
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-titre">
+      <i class="bi bi-pencil-fill me-2"></i>Modifier un Produit
+    </h1>
+    <p class="text-muted">
+      Modification de : <strong>{{ product.nom }}</strong>
+    </p>
+  </div>
+  <div class="admin-page-actions">
+    <a href="{{ url_for('admin.produits') }}" class="btn-admin-secondary">
+      <i class="bi bi-arrow-left me-2"></i>Retour aux Produits
+    </a>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     FORMULAIRE
+════════════════════════════════════════════════════ -->
+<div class="row g-4">
+
+  <!-- Colonne principale -->
+  <div class="col-lg-8">
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <h5 class="admin-card-titre">
+          <i class="bi bi-info-circle me-2"></i>
+          Informations du Produit
+        </h5>
+      </div>
+      <div class="admin-card-body p-4">
+
+        <form action="{{ url_for('admin.modifier_produit',
+                       product_id=product.id) }}"
+              method="POST" enctype="multipart/form-data"
+              id="formModifierProduit">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+          <!-- Nom -->
+          <div class="mb-4">
+            <label for="nom" class="form-label admin-label">
+              Nom du produit <span class="text-danger">*</span>
+            </label>
+            <input type="text" name="nom" id="nom"
+                   class="form-control admin-input"
+                   value="{{ product.nom }}"
+                   required/>
+          </div>
+
+          <!-- Description -->
+          <div class="mb-4">
+            <label for="description" class="form-label admin-label">
+              Description
+            </label>
+            <textarea name="description" id="description"
+                      class="form-control admin-input" rows="4">
+{{ product.description or '' }}</textarea>
+          </div>
+
+          <!-- Prix & Catégorie -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label for="prix" class="form-label admin-label">
+                Prix (FCFA) <span class="text-danger">*</span>
+              </label>
+              <div class="input-group">
+                <input type="number" name="prix" id="prix"
+                       class="form-control admin-input"
+                       value="{{ product.prix }}"
+                       min="1" step="50" required/>
+                <span class="input-group-text">FCFA</span>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="categorie" class="form-label admin-label">
+                Catégorie <span class="text-danger">*</span>
+              </label>
+              <select name="categorie" id="categorie"
+                      class="form-select admin-input" required>
+                {% for valeur, label in categories %}
+                  <option value="{{ valeur }}"
+                    {% if valeur == product.categorie %}selected{% endif %}>
+                    {{ label }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <!-- Stock & Disponibilité -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label for="stock" class="form-label admin-label">
+                Stock
+              </label>
+              <input type="number" name="stock" id="stock"
+                     class="form-control admin-input"
+                     value="{{ product.stock }}"
+                     min="0"/>
+              <small class="text-muted">
+                Stock actuel : {{ product.stock }} unité(s)
+              </small>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label admin-label">
+                Disponibilité
+              </label>
+              <div class="form-check form-switch mt-2">
+                <input type="checkbox" name="disponible"
+                       id="disponible"
+                       class="form-check-input"
+                       {% if product.disponible %}checked{% endif %}/>
+                <label for="disponible" class="form-check-label">
+                  Produit visible sur le site
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Infos création/modification -->
+          <div class="admin-meta-info mb-4">
+            <small class="text-muted">
+              <i class="bi bi-calendar3 me-1"></i>
+              Créé le {{ product.created_at.strftime('%d/%m/%Y à %H:%M') }}
+            </small>
+            {% if product.updated_at %}
+              <small class="text-muted ms-3">
+                <i class="bi bi-pencil me-1"></i>
+                Modifié le {{ product.updated_at.strftime('%d/%m/%Y à %H:%M') }}
+              </small>
+            {% endif %}
+          </div>
+
+          <!-- Boutons -->
+          <div class="d-flex gap-3 mt-4">
+            <button type="submit" class="btn-admin-primary">
+              <i class="bi bi-check-circle me-2"></i>
+              Enregistrer les Modifications
+            </button>
+            <a href="{{ url_for('admin.produits') }}"
+               class="btn-admin-secondary">
+              Annuler
+            </a>
+            <!-- Supprimer depuis le formulaire de modification -->
+            <form action="{{ url_for('admin.supprimer_produit',
+                           product_id=product.id) }}"
+                  method="POST" class="ms-auto">
+              <input type="hidden" name="csrf_token"
+                     value="{{ csrf_token() }}"/>
+              <button type="submit" class="btn-admin-danger"
+                      onclick="return confirm('Supprimer définitivement {{ product.nom }} ? Cette action est irréversible.')">
+                <i class="bi bi-trash3 me-2"></i>Supprimer
+              </button>
+            </form>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Colonne image -->
+  <div class="col-lg-4">
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <h5 class="admin-card-titre">
+          <i class="bi bi-image me-2"></i>Image du Produit
+        </h5>
+      </div>
+      <div class="admin-card-body p-4">
+
+        <!-- Image actuelle -->
+        <div class="mb-3">
+          <label class="form-label admin-label">Image actuelle</label>
+          <div class="img-preview-wrapper">
+            <img id="imgPreview"
+                 src="{{ url_for('static', filename='uploads/' + product.image) }}"
+                 alt="{{ product.nom }}" class="img-preview"
+                 onerror="this.src='{{ url_for('static', filename='img/default.jpg') }}'"/>
+          </div>
+        </div>
+
+        <!-- Nouvelle image -->
+        <label for="image" class="form-label admin-label">
+          Changer l'image
+        </label>
+        <input type="file" name="image" id="image"
+               class="form-control admin-input"
+               accept=".png,.jpg,.jpeg,.webp"
+               form="formModifierProduit"
+               onchange="previewImage(this)"/>
+        <small class="text-muted d-block mt-2">
+          <i class="bi bi-info-circle me-1"></i>
+          Laissez vide pour conserver l'image actuelle.<br/>
+          Formats : PNG, JPG, JPEG, WEBP — Max 5 MB
+        </small>
+
+      </div>
+    </div>
+
+    <!-- Promotions actives sur ce produit -->
+    {% set promos = product.promotions|selectattr('active')|list %}
+    {% if promos %}
+      <div class="admin-card mt-4">
+        <div class="admin-card-header">
+          <h5 class="admin-card-titre">
+            <i class="bi bi-tag-fill me-2"></i>
+            Promotions Actives
+          </h5>
+        </div>
+        <div class="admin-card-body p-3">
+          {% for promo in promos %}
+            {% if promo.is_active() %}
+              <div class="promo-info-card">
+                <strong>{{ promo.titre }}</strong>
+                <span class="badge bg-danger ms-2">
+                  {{ promo.formatted_pourcentage() }}
+                </span>
+                <small class="d-block text-muted mt-1">
+                  Prix promo : {{ promo.formatted_prix_promo() }}<br/>
+                  Fin : {{ promo.date_fin.strftime('%d/%m/%Y') }}
+                  ({{ promo.jours_restants() }} jour(s) restant(s))
+                </small>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Prévisualisation image avant upload
+  function previewImage(input) {
+    const preview = document.getElementById('imgPreview');
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        preview.src = e.target.result;
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,409 @@
+<!--
+FICHIER : templates/client/index.html
+RÔLE    : Page d'accueil du site ND's REFRESHMENT
+APPORT  : Affiche le hero, les bannières carousel, les produits vedettes
+          et les promotions actives chargés dynamiquement depuis la BDD.
+DÉPENDANCES : base.html, client.index, Product, Banner, Promotion
+-->
+{% extends 'base.html' %}
+
+{% block title %}ND's REFRESHMENT — L'Innovation Agroalimentaire Premium{% endblock %}
+
+{% block content %}
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION HERO
+════════════════════════════════════════════════════ -->
+<section class="hero-section">
+  <div class="hero-bg"></div>
+  <div class="container">
+    <div class="row align-items-center min-vh-80">
+      <div class="col-lg-7">
+
+        <!-- Tags animés -->
+        <div class="hero-tags mb-4">
+          <span class="hero-tag">#Ananas Gingembre</span>
+          <span class="hero-tag">#Traiteur Pro</span>
+          <span class="hero-tag">#Baobab Pur</span>
+          <span class="hero-tag">#Pâtisserie Artisanale</span>
+        </div>
+
+        <h1 class="hero-title">
+          L'Art de Rafraîchir,<br/>
+          <span class="hero-accent">Naturellement.</span>
+        </h1>
+
+        <p class="hero-subtitle">
+          ND's REFRESHMENT : Des saveurs uniques, des services gourmands,
+          une expertise agroalimentaire professionnelle à Douala.
+        </p>
+
+        <div class="hero-actions d-flex gap-3 flex-wrap">
+          <a href="{{ url_for('client.produits') }}" class="btn-hero-primary">
+            <i class="bi bi-bag me-2"></i>Découvrir nos Jus Premium
+          </a>
+          <a href="{{ url_for('client.apropos') }}" class="btn-hero-secondary">
+            En savoir plus <i class="bi bi-arrow-right ms-2"></i>
+          </a>
+        </div>
+
+      </div>
+
+      <div class="col-lg-5 d-none d-lg-block">
+        <div class="hero-visual">
+          <div class="hero-circle-1"></div>
+          <div class="hero-circle-2"></div>
+          <img src="{{ url_for('static', filename='img/hero/hero-jus.png') }}"
+               alt="Jus ND's REFRESHMENT" class="hero-img"
+               onerror="this.style.display='none'"/>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     BANNIÈRES CAROUSEL
+════════════════════════════════════════════════════ -->
+{% if banners %}
+<section class="section-banners py-4">
+  <div class="container">
+    <div id="bannersCarousel" class="carousel slide" data-bs-ride="carousel">
+      <div class="carousel-inner">
+        {% for banner in banners %}
+          <div class="carousel-item {% if loop.first %}active{% endif %}">
+            <div class="banner-card">
+              <img src="{{ url_for('static', filename='uploads/' + banner.image) }}"
+                   alt="{{ banner.titre }}" class="banner-img"/>
+              <div class="banner-overlay">
+                <h3 class="banner-titre">{{ banner.titre }}</h3>
+                {% if banner.description %}
+                  <p class="banner-desc">{{ banner.description }}</p>
+                {% endif %}
+                {% if banner.lien_produit_id %}
+                  <a href="{{ url_for('client.produit_detail', product_id=banner.lien_produit_id) }}"
+                     class="btn-banner">
+                    Voir le produit <i class="bi bi-arrow-right ms-2"></i>
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      {% if banners|length > 1 %}
+        <button class="carousel-control-prev" type="button"
+                data-bs-target="#bannersCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button"
+                data-bs-target="#bannersCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon"></span>
+        </button>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ═══════════════════════════════════════════════════
+     PROMOTIONS ACTIVES
+════════════════════════════════════════════════════ -->
+{% if promotions %}
+<section class="section-promos py-5">
+  <div class="container">
+    <div class="section-header text-center mb-5">
+      <span class="section-badge">Offres Limitées</span>
+      <h2 class="section-title">Promotions en Cours</h2>
+    </div>
+    <div class="row g-4">
+      {% for promo in promotions %}
+        <div class="col-lg-4 col-md-6">
+          <div class="promo-card">
+            <div class="promo-badge">{{ promo.formatted_pourcentage() }}</div>
+            <div class="promo-content">
+              <h5 class="promo-titre">{{ promo.titre }}</h5>
+              <p class="promo-produit">{{ promo.product.nom }}</p>
+              <div class="promo-prix">
+                <span class="prix-original">{{ promo.product.formatted_price() }}</span>
+                <span class="prix-promo">{{ promo.formatted_prix_promo() }}</span>
+              </div>
+              {% if promo.jours_restants() > 0 %}
+                <p class="promo-delai">
+                  <i class="bi bi-clock me-1"></i>
+                  Encore {{ promo.jours_restants() }} jour(s)
+                </p>
+              {% endif %}
+              <a href="{{ url_for('client.produit_detail', product_id=promo.product_id) }}"
+                 class="btn-promo">
+                Profiter de l'offre
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ═══════════════════════════════════════════════════
+     PRODUITS VEDETTES
+════════════════════════════════════════════════════ -->
+<section class="section-produits py-5">
+  <div class="container">
+    <div class="section-header text-center mb-5">
+      <span class="section-badge">Notre Sélection</span>
+      <h2 class="section-title">Découvrez nos Saveurs Pures</h2>
+      <p class="section-subtitle">
+        Des recettes naturelles, sans conservateurs, préparées avec des
+        fruits frais d'Afrique.
+      </p>
+    </div>
+
+    {% if produits_vedettes %}
+      <div class="row g-4">
+        {% for product in produits_vedettes %}
+          <div class="col-lg-3 col-md-6">
+            <div class="product-card">
+
+              <!-- Badge promotion -->
+              {% set promo = product.promotions|selectattr('active')|list %}
+              {% if promo and promo[0].is_active() %}
+                <div class="product-badge-promo">
+                  {{ promo[0].formatted_pourcentage() }}
+                </div>
+              {% endif %}
+
+              <!-- Image -->
+              <div class="product-img-wrapper">
+                <img src="{{ url_for('static', filename='uploads/' + product.image) }}"
+                     alt="{{ product.nom }}" class="product-img"
+                     onerror="this.src='{{ url_for('static', filename='img/default.jpg') }}'"/>
+              </div>
+
+              <!-- Infos -->
+              <div class="product-body">
+                <span class="product-categorie">{{ product.categorie }}</span>
+                <h5 class="product-nom">{{ product.nom }}</h5>
+                <p class="product-desc">
+                  {{ product.description|truncate(60) if product.description else '' }}
+                </p>
+
+                <!-- Prix -->
+                <div class="product-prix">
+                  {% if promo and promo[0].is_active() %}
+                    <span class="prix-barre">{{ product.formatted_price() }}</span>
+                    <span class="prix-actuel">{{ promo[0].formatted_prix_promo() }}</span>
+                  {% else %}
+                    <span class="prix-actuel">{{ product.formatted_price() }}</span>
+                  {% endif %}
+                </div>
+
+                <!-- Note moyenne -->
+                {% if product.reviews %}
+                  <div class="product-rating">
+                    {% for i in range(1, 6) %}
+                      <i class="bi bi-star{% if i <= product.average_rating() %}-fill{% endif %}"></i>
+                    {% endfor %}
+                    <small>({{ product.reviews|length }})</small>
+                  </div>
+                {% endif %}
+
+                <!-- Actions -->
+                <div class="product-actions">
+                  <a href="{{ url_for('client.produit_detail', product_id=product.id) }}"
+                     class="btn-voir">Voir</a>
+                  {% if product.is_available() %}
+                    <form action="{{ url_for('panier.ajouter', product_id=product.id) }}"
+                          method="POST" class="d-inline">
+                      <input type="hidden" name="quantite" value="1"/>
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                      <button type="submit" class="btn-ajouter">
+                        <i class="bi bi-bag-plus"></i>
+                      </button>
+                    </form>
+                  {% else %}
+                    <button class="btn-indisponible" disabled>Épuisé</button>
+                  {% endif %}
+                </div>
+
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="text-center mt-5">
+        <a href="{{ url_for('client.produits') }}" class="btn-voir-tout">
+          Voir toute la gamme <i class="bi bi-arrow-right ms-2"></i>
+        </a>
+      </div>
+
+    {% else %}
+      <div class="text-center py-5">
+        <i class="bi bi-bag-x fs-1 text-muted"></i>
+        <p class="mt-3 text-muted">Aucun produit disponible pour le moment.</p>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     SERVICES
+════════════════════════════════════════════════════ -->
+<section class="section-services py-5">
+  <div class="container">
+    <div class="section-header text-center mb-5">
+      <span class="section-badge">Notre Expertise</span>
+      <h2 class="section-title">Des Services Complémentaires</h2>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-3 col-md-6">
+        <div class="service-card">
+          <div class="service-icon"><i class="bi bi-cup-straw"></i></div>
+          <h5 class="service-titre">Cocktails Pro</h5>
+          <p class="service-desc">
+            Des mélanges signature sans alcool pour vos réceptions et
+            événements d'entreprise.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="service-card">
+          <div class="service-icon"><i class="bi bi-box-seam"></i></div>
+          <h5 class="service-titre">Gamelles & Déjeuner</h5>
+          <p class="service-desc">
+            Des repas sains et équilibrés livrés au bureau pour le
+            bien-être de vos équipes.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="service-card">
+          <div class="service-icon"><i class="bi bi-cake2"></i></div>
+          <h5 class="service-titre">Gâteaux & Pâtisseries</h5>
+          <p class="service-desc">
+            Des créations artisanales sur mesure pour vos anniversaires,
+            mariages et événements.
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="service-card">
+          <div class="service-icon"><i class="bi bi-stars"></i></div>
+          <h5 class="service-titre">Assortiment Traiteur</h5>
+          <p class="service-desc">
+            Petits plaisirs sucrés et salés pour accompagner nos jus
+            lors de vos événements professionnels.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     TÉMOIGNAGES
+════════════════════════════════════════════════════ -->
+<section class="section-temoignages py-5">
+  <div class="container">
+    <div class="section-header text-center mb-5">
+      <span class="section-badge">Ils nous font confiance</span>
+      <h2 class="section-title">Ce Que Nos Clients Disent</h2>
+    </div>
+    <div class="row g-4 justify-content-center">
+      <div class="col-lg-5">
+        <div class="temoignage-card">
+          <div class="temoignage-stars">★★★★★</div>
+          <p class="temoignage-texte">
+            Le jus d'Ananas Gingembre est le meilleur que j'ai jamais
+            goûté. Service de livraison impeccable et professionnel
+            pour notre bureau.
+          </p>
+          <div class="temoignage-auteur">
+            <strong>M. Jean-Momo Fotso</strong>
+            <span>CEO, Tech Innov</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="temoignage-card">
+          <div class="temoignage-stars">★★★★★</div>
+          <p class="temoignage-texte">
+            Nous avons commandé les cocktails pour un événement.
+            La qualité était au rendez-vous. Présentation soignée,
+            saveurs originales.
+          </p>
+          <div class="temoignage-auteur">
+            <strong>Mme Clarisse Mbopi</strong>
+            <span>Responsable Événementiel, GlobalCorp</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     ENGAGEMENT QUALITÉ
+════════════════════════════════════════════════════ -->
+<section class="section-engagement py-5">
+  <div class="container">
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-4">
+        <h2 class="engagement-titre">Notre Engagement Qualité</h2>
+        <p class="engagement-desc">
+          Chaque produit ND's REFRESHMENT est préparé avec des fruits
+          frais d'Afrique, sans sucres ajoutés, dans le respect des
+          normes d'hygiène les plus strictes.
+        </p>
+      </div>
+      <div class="col-lg-8">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="engagement-item">
+              <i class="bi bi-leaf-fill"></i>
+              <h6>100% Naturel</h6>
+              <p>Fruits et ingrédients frais d'Afrique, sans sucres ajoutés.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="engagement-item">
+              <i class="bi bi-lightbulb-fill"></i>
+              <h6>Innovation Goût</h6>
+              <p>Des saveurs uniques et des mélanges audacieux qui surprennent.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="engagement-item">
+              <i class="bi bi-shield-fill-check"></i>
+              <h6>Qualité Certifiée</h6>
+              <p>Normes d'hygiène strictes. La santé de nos clients est notre priorité.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     CTA FINAL
+════════════════════════════════════════════════════ -->
+<section class="section-cta py-5">
+  <div class="container text-center">
+    <h2 class="cta-titre">
+      Vous anticipez un événement futur ?
+    </h2>
+    <p class="cta-desc">
+      N'hésitez plus un instant. Passez votre commande dès maintenant
+      et profitez de nos saveurs naturelles livrées à Douala et Yaoundé.
+    </p>
+    <a href="{{ url_for('client.produits') }}" class="btn-cta">
+      <i class="bi bi-bag-check me-2"></i>Passer une Commande
+    </a>
+  </div>
+</section>
+
+{% endblock %}

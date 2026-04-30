@@ -1,0 +1,263 @@
+<!--
+FICHIER : templates/admin/produits.html
+RÔLE    : Liste et gestion des produits dans l'interface admin
+APPORT  : Affiche tous les produits avec barre de recherche, actions
+          modifier/supprimer et accès rapide à l'ajout d'un nouveau produit.
+DÉPENDANCES : admin_base.html, admin.produits, Product, paginate_query
+-->
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}Produits — Administration ND's REFRESHMENT{% endblock %}
+
+{% block content %}
+
+<!-- ═══════════════════════════════════════════════════
+     EN-TÊTE
+════════════════════════════════════════════════════ -->
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-titre">
+      <i class="bi bi-bag-fill me-2"></i>Gestion des Produits
+    </h1>
+    <p class="text-muted">
+      {{ produits.total }} produit(s) au total
+    </p>
+  </div>
+  <div class="admin-page-actions">
+    <a href="{{ url_for('admin.nouveau_produit') }}"
+       class="btn-admin-primary">
+      <i class="bi bi-plus-lg me-2"></i>Nouveau Produit
+    </a>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     BARRE DE RECHERCHE
+════════════════════════════════════════════════════ -->
+<div class="admin-card mb-4">
+  <div class="admin-card-body p-3">
+    <form method="GET" action="{{ url_for('admin.produits') }}"
+          class="d-flex gap-3">
+      <div class="input-group">
+        <span class="input-group-text">
+          <i class="bi bi-search"></i>
+        </span>
+        <input type="text" name="q" class="form-control"
+               placeholder="Rechercher un produit par nom..."
+               value="{{ recherche }}"/>
+      </div>
+      <button type="submit" class="btn-admin-primary">
+        Rechercher
+      </button>
+      {% if recherche %}
+        <a href="{{ url_for('admin.produits') }}"
+           class="btn-admin-secondary">
+          <i class="bi bi-x-lg me-1"></i>Effacer
+        </a>
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     TABLEAU PRODUITS
+════════════════════════════════════════════════════ -->
+<div class="admin-card">
+  <div class="admin-card-header">
+    <h5 class="admin-card-titre">
+      {% if recherche %}
+        Résultats pour « {{ recherche }} »
+      {% else %}
+        Tous les Produits
+      {% endif %}
+    </h5>
+  </div>
+
+  {% if produits.items %}
+    <div class="table-responsive">
+      <table class="table admin-table">
+        <thead>
+          <tr>
+            <th style="width: 60px">#</th>
+            <th style="width: 80px">Image</th>
+            <th>Nom</th>
+            <th>Catégorie</th>
+            <th>Prix</th>
+            <th>Stock</th>
+            <th>Statut</th>
+            <th>Promotion</th>
+            <th style="width: 120px">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for product in produits.items %}
+            <tr>
+              <td class="text-muted">#{{ product.id }}</td>
+
+              <!-- Image -->
+              <td>
+                <img src="{{ url_for('static', filename='uploads/' + product.image) }}"
+                     alt="{{ product.nom }}"
+                     class="admin-product-img"
+                     onerror="this.src='{{ url_for('static', filename='img/default.jpg') }}'"/>
+              </td>
+
+              <!-- Nom -->
+              <td>
+                <strong>{{ product.nom }}</strong>
+                {% if product.description %}
+                  <small class="d-block text-muted">
+                    {{ product.description|truncate(50) }}
+                  </small>
+                {% endif %}
+              </td>
+
+              <!-- Catégorie -->
+              <td>
+                <span class="badge-categorie">
+                  {{ product.categorie|capitalize }}
+                </span>
+              </td>
+
+              <!-- Prix -->
+              <td>
+                <strong>{{ product.formatted_price() }}</strong>
+              </td>
+
+              <!-- Stock -->
+              <td>
+                {% if product.stock == 0 %}
+                  <span class="badge bg-danger">Épuisé</span>
+                {% elif product.stock <= 5 %}
+                  <span class="badge bg-warning text-dark">
+                    {{ product.stock }} restant(s)
+                  </span>
+                {% else %}
+                  <span class="badge bg-success">
+                    {{ product.stock }} en stock
+                  </span>
+                {% endif %}
+              </td>
+
+              <!-- Statut disponibilité -->
+              <td>
+                {% if product.disponible %}
+                  <span class="admin-statut statut-livree">
+                    <i class="bi bi-check-circle me-1"></i>Visible
+                  </span>
+                {% else %}
+                  <span class="admin-statut statut-annulee">
+                    <i class="bi bi-eye-slash me-1"></i>Masqué
+                  </span>
+                {% endif %}
+              </td>
+
+              <!-- Promotion active -->
+              <td>
+                {% set promo = product.promotions|selectattr('active')|list %}
+                {% if promo and promo[0].is_active() %}
+                  <span class="badge bg-danger">
+                    {{ promo[0].formatted_pourcentage() }}
+                  </span>
+                {% else %}
+                  <span class="text-muted small">—</span>
+                {% endif %}
+              </td>
+
+              <!-- Actions -->
+              <td>
+                <div class="d-flex gap-2">
+                  <a href="{{ url_for('admin.modifier_produit',
+                             product_id=product.id) }}"
+                     class="btn-admin-sm btn-edit"
+                     title="Modifier">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <form action="{{ url_for('admin.supprimer_produit',
+                                 product_id=product.id) }}"
+                        method="POST" class="d-inline">
+                    <input type="hidden" name="csrf_token"
+                           value="{{ csrf_token() }}"/>
+                    <button type="submit"
+                            class="btn-admin-sm btn-delete"
+                            title="Supprimer"
+                            onclick="return confirm('Supprimer {{ product.nom }} ? Cette action est irréversible.')">
+                      <i class="bi bi-trash3"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if produits.pages > 1 %}
+      <div class="admin-pagination p-3">
+        <nav aria-label="Pagination produits admin">
+          <ul class="pagination justify-content-center mb-0">
+            <li class="page-item
+                {% if not produits.has_prev %}disabled{% endif %}">
+              <a class="page-link"
+                 href="{{ url_for('admin.produits', page=produits.prev_num,
+                          q=recherche) }}">
+                <i class="bi bi-chevron-left"></i>
+              </a>
+            </li>
+            {% for page_num in produits.iter_pages(left_edge=1,
+                               right_edge=1, left_current=2,
+                               right_current=2) %}
+              {% if page_num %}
+                <li class="page-item
+                    {% if page_num == produits.page %}active{% endif %}">
+                  <a class="page-link"
+                     href="{{ url_for('admin.produits', page=page_num,
+                              q=recherche) }}">
+                    {{ page_num }}
+                  </a>
+                </li>
+              {% else %}
+                <li class="page-item disabled">
+                  <span class="page-link">…</span>
+                </li>
+              {% endif %}
+            {% endfor %}
+            <li class="page-item
+                {% if not produits.has_next %}disabled{% endif %}">
+              <a class="page-link"
+                 href="{{ url_for('admin.produits', page=produits.next_num,
+                          q=recherche) }}">
+                <i class="bi bi-chevron-right"></i>
+              </a>
+            </li>
+          </ul>
+        </nav>
+        <p class="text-center text-muted small mt-2 mb-0">
+          Page {{ produits.page }} sur {{ produits.pages }}
+        </p>
+      </div>
+    {% endif %}
+
+  {% else %}
+    <div class="empty-state text-center py-5">
+      <i class="bi bi-bag-x fs-1 text-muted"></i>
+      <h5 class="mt-3">
+        {% if recherche %}
+          Aucun produit trouvé pour « {{ recherche }} »
+        {% else %}
+          Aucun produit dans le catalogue
+        {% endif %}
+      </h5>
+      <a href="{{ url_for('admin.nouveau_produit') }}"
+         class="btn-admin-primary mt-3">
+        <i class="bi bi-plus-lg me-2"></i>Ajouter un Produit
+      </a>
+    </div>
+  {% endif %}
+
+</div>
+
+{% endblock %}

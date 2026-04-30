@@ -1,0 +1,241 @@
+<!--
+FICHIER : templates/client/avis.html
+RÔLE    : Page des avis clients
+APPORT  : Affiche tous les avis approuvés et le formulaire de dépôt
+          d'un nouvel avis sur un produit acheté.
+DÉPENDANCES : base.html, client.avis, Review, Product, NOTES, login_required_custom
+-->
+{% extends 'base.html' %}
+
+{% block title %}Avis Clients — ND's REFRESHMENT{% endblock %}
+
+{% block content %}
+
+<!-- ═══════════════════════════════════════════════════
+     EN-TÊTE
+════════════════════════════════════════════════════ -->
+<section class="page-header py-5">
+  <div class="container text-center">
+    <span class="section-badge">Témoignages</span>
+    <h1 class="page-title mt-2">Ce Que Nos Clients Pensent</h1>
+    <p class="page-subtitle text-muted">
+      Des avis authentiques de nos clients satisfaits à Douala et Yaoundé.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     CONTENU AVIS
+════════════════════════════════════════════════════ -->
+<section class="avis-section py-5">
+  <div class="container">
+    <div class="row g-5">
+
+      <!-- ── LISTE DES AVIS ────────────────────── -->
+      <div class="col-lg-8">
+        <h4 class="mb-4">
+          <i class="bi bi-chat-square-quote me-2"></i>
+          Avis Publiés
+        </h4>
+
+        {% if avis_publies %}
+          <div class="avis-liste">
+            {% for review in avis_publies %}
+              <div class="avis-card">
+
+                <!-- En-tête avis -->
+                <div class="avis-header">
+                  <div class="avis-auteur-info">
+                    <div class="avis-avatar">
+                      {{ review.auteur.prenom[0]|upper }}
+                    </div>
+                    <div>
+                      <strong class="avis-auteur-nom">
+                        {{ review.auteur.full_name() }}
+                      </strong>
+                      <span class="avis-produit text-muted">
+                        <i class="bi bi-bag me-1"></i>
+                        {{ review.product.nom }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="avis-note">
+                    <span class="avis-stars">{{ review.stars() }}</span>
+                    <span class="avis-note-num">
+                      {{ review.note }}/5
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Commentaire -->
+                {% if review.commentaire %}
+                  <p class="avis-texte">
+                    <i class="bi bi-quote me-2 text-muted"></i>
+                    {{ review.commentaire }}
+                  </p>
+                {% else %}
+                  <p class="avis-texte text-muted fst-italic">
+                    Avis sans commentaire.
+                  </p>
+                {% endif %}
+
+                <!-- Pied avis -->
+                <div class="avis-footer">
+                  <small class="text-muted">
+                    <i class="bi bi-calendar3 me-1"></i>
+                    {{ review.created_at.strftime('%d/%m/%Y') }}
+                  </small>
+                  <a href="{{ url_for('client.produit_detail',
+                             product_id=review.product_id) }}"
+                     class="avis-voir-produit">
+                    <i class="bi bi-arrow-right me-1"></i>
+                    Voir le produit
+                  </a>
+                </div>
+
+              </div>
+            {% endfor %}
+          </div>
+
+        {% else %}
+          <div class="empty-state text-center py-5">
+            <i class="bi bi-chat-square-text fs-1 text-muted"></i>
+            <h5 class="mt-3">Aucun avis publié pour le moment</h5>
+            <p class="text-muted">
+              Soyez le premier à partager votre expérience !
+            </p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- ── FORMULAIRE AVIS ────────────────────── -->
+      <div class="col-lg-4">
+        <div class="avis-form-wrapper sticky-top">
+
+          {% if current_user.is_authenticated %}
+            <div class="avis-form-card">
+              <h5 class="avis-form-titre">
+                <i class="bi bi-star me-2"></i>
+                Laisser un Avis
+              </h5>
+              <p class="text-muted small mb-4">
+                Partagez votre expérience avec nos produits.
+                Votre avis sera publié après validation.
+              </p>
+
+              <form action="{{ url_for('client.avis') }}"
+                    method="POST" id="formAvis">
+                <input type="hidden" name="csrf_token"
+                       value="{{ csrf_token() }}"/>
+
+                <!-- Choix produit -->
+                <div class="mb-3">
+                  <label class="form-label">
+                    Produit concerné
+                    <span class="text-danger">*</span>
+                  </label>
+                  <select name="product_id" class="form-select auth-input"
+                          required>
+                    <option value="" disabled selected>
+                      Choisir un produit...
+                    </option>
+                    {% for product in produits %}
+                      <option value="{{ product.id }}">
+                        {{ product.nom }}
+                      </option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <!-- Note étoiles -->
+                <div class="mb-3">
+                  <label class="form-label">
+                    Votre note
+                    <span class="text-danger">*</span>
+                  </label>
+                  <div class="star-rating-input">
+                    {% for note, label in notes|reverse %}
+                      <input type="radio" name="note"
+                             id="star{{ note }}" value="{{ note }}"
+                             class="star-radio" required/>
+                      <label for="star{{ note }}"
+                             class="star-label-input"
+                             title="{{ label }}">★</label>
+                    {% endfor %}
+                  </div>
+                  <small class="text-muted" id="noteLabel">
+                    Cliquez sur une étoile pour noter
+                  </small>
+                </div>
+
+                <!-- Commentaire -->
+                <div class="mb-4">
+                  <label class="form-label">
+                    Commentaire (optionnel)
+                  </label>
+                  <textarea name="commentaire" class="form-control auth-input"
+                            rows="4"
+                            placeholder="Décrivez votre expérience avec ce produit...">
+                  </textarea>
+                </div>
+
+                <button type="submit" class="btn-auth w-100">
+                  <i class="bi bi-send me-2"></i>
+                  Soumettre mon Avis
+                </button>
+
+              </form>
+            </div>
+
+          {% else %}
+            <!-- Non connecté -->
+            <div class="avis-login-card text-center">
+              <i class="bi bi-person-lock fs-2 mb-3"></i>
+              <h6>Connectez-vous pour laisser un avis</h6>
+              <p class="text-muted small">
+                Partagez votre expérience avec la communauté ND's REFRESHMENT.
+              </p>
+              <a href="{{ url_for('auth.login') }}"
+                 class="btn-auth w-100 mb-3">
+                <i class="bi bi-box-arrow-in-right me-2"></i>
+                Se Connecter
+              </a>
+              <a href="{{ url_for('auth.register') }}"
+                 class="btn-auth-secondary w-100">
+                <i class="bi bi-person-plus me-2"></i>
+                Créer un Compte
+              </a>
+            </div>
+          {% endif %}
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Mise à jour du label selon la note sélectionnée
+  const labels = {
+    1: '★ Très mauvais',
+    2: '★★ Mauvais',
+    3: '★★★ Moyen',
+    4: '★★★★ Bien',
+    5: '★★★★★ Excellent'
+  };
+
+  document.querySelectorAll('.star-radio').forEach(radio => {
+    radio.addEventListener('change', function() {
+      const label = document.getElementById('noteLabel');
+      if (label) {
+        label.textContent = labels[this.value] || '';
+        label.style.color = '#f59e0b';
+      }
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,241 @@
+<!--
+FICHIER : templates/admin/nouveau_produit.html
+RÔLE    : Formulaire d'ajout d'un nouveau produit
+APPORT  : Permet à l'admin d'ajouter un produit avec nom, prix, catégorie,
+          stock, image et statut de disponibilité.
+DÉPENDANCES : admin_base.html, admin.nouveau_produit, Product, CATEGORIES
+-->
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}Nouveau Produit — Administration ND's REFRESHMENT{% endblock %}
+
+{% block content %}
+
+<!-- ═══════════════════════════════════════════════════
+     EN-TÊTE
+════════════════════════════════════════════════════ -->
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-titre">
+      <i class="bi bi-plus-circle-fill me-2"></i>Nouveau Produit
+    </h1>
+    <p class="text-muted">
+      Ajoutez un nouveau produit au catalogue ND's REFRESHMENT.
+    </p>
+  </div>
+  <div class="admin-page-actions">
+    <a href="{{ url_for('admin.produits') }}" class="btn-admin-secondary">
+      <i class="bi bi-arrow-left me-2"></i>Retour aux Produits
+    </a>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     FORMULAIRE
+════════════════════════════════════════════════════ -->
+<div class="row g-4">
+
+  <!-- Colonne principale -->
+  <div class="col-lg-8">
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <h5 class="admin-card-titre">
+          <i class="bi bi-info-circle me-2"></i>
+          Informations du Produit
+        </h5>
+      </div>
+      <div class="admin-card-body p-4">
+
+        <form action="{{ url_for('admin.nouveau_produit') }}"
+              method="POST" enctype="multipart/form-data"
+              id="formNouveauProduit">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+          <!-- Nom -->
+          <div class="mb-4">
+            <label for="nom" class="form-label admin-label">
+              Nom du produit <span class="text-danger">*</span>
+            </label>
+            <input type="text" name="nom" id="nom"
+                   class="form-control admin-input"
+                   placeholder="Ex: Jus Ananas Gingembre Premium"
+                   required/>
+          </div>
+
+          <!-- Description -->
+          <div class="mb-4">
+            <label for="description" class="form-label admin-label">
+              Description
+            </label>
+            <textarea name="description" id="description"
+                      class="form-control admin-input" rows="4"
+                      placeholder="Décrivez le produit, ses ingrédients, ses bienfaits...">
+            </textarea>
+            <small class="text-muted">
+              Une bonne description améliore les ventes.
+            </small>
+          </div>
+
+          <!-- Prix & Catégorie -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label for="prix" class="form-label admin-label">
+                Prix (FCFA) <span class="text-danger">*</span>
+              </label>
+              <div class="input-group">
+                <input type="number" name="prix" id="prix"
+                       class="form-control admin-input"
+                       placeholder="Ex: 1500"
+                       min="1" step="50" required/>
+                <span class="input-group-text">FCFA</span>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="categorie" class="form-label admin-label">
+                Catégorie <span class="text-danger">*</span>
+              </label>
+              <select name="categorie" id="categorie"
+                      class="form-select admin-input" required>
+                <option value="" disabled selected>
+                  Choisir une catégorie...
+                </option>
+                {% for valeur, label in categories %}
+                  <option value="{{ valeur }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <!-- Stock & Disponibilité -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label for="stock" class="form-label admin-label">
+                Stock initial
+              </label>
+              <input type="number" name="stock" id="stock"
+                     class="form-control admin-input"
+                     value="0" min="0"/>
+              <small class="text-muted">
+                Nombre d'unités disponibles.
+              </small>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label admin-label">
+                Disponibilité
+              </label>
+              <div class="form-check form-switch mt-2">
+                <input type="checkbox" name="disponible"
+                       id="disponible"
+                       class="form-check-input" checked/>
+                <label for="disponible" class="form-check-label">
+                  Produit visible sur le site
+                </label>
+              </div>
+              <small class="text-muted">
+                Décochez pour masquer sans supprimer.
+              </small>
+            </div>
+          </div>
+
+          <!-- Bouton submit -->
+          <div class="d-flex gap-3 mt-4">
+            <button type="submit" class="btn-admin-primary">
+              <i class="bi bi-check-circle me-2"></i>
+              Ajouter le Produit
+            </button>
+            <a href="{{ url_for('admin.produits') }}"
+               class="btn-admin-secondary">
+              Annuler
+            </a>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Colonne image -->
+  <div class="col-lg-4">
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <h5 class="admin-card-titre">
+          <i class="bi bi-image me-2"></i>Image du Produit
+        </h5>
+      </div>
+      <div class="admin-card-body p-4">
+
+        <!-- Prévisualisation -->
+        <div class="img-preview-wrapper mb-3">
+          <img id="imgPreview"
+               src="{{ url_for('static', filename='img/default.jpg') }}"
+               alt="Prévisualisation" class="img-preview"
+               onerror="this.src='{{ url_for('static', filename='img/default.jpg') }}'"/>
+        </div>
+
+        <!-- Input file -->
+        <label for="image" class="form-label admin-label">
+          Choisir une image
+        </label>
+        <input type="file" name="image" id="image"
+               class="form-control admin-input"
+               accept=".png,.jpg,.jpeg,.webp"
+               form="formNouveauProduit"
+               onchange="previewImage(this)"/>
+        <small class="text-muted d-block mt-2">
+          <i class="bi bi-info-circle me-1"></i>
+          Formats acceptés : PNG, JPG, JPEG, WEBP<br/>
+          Taille maximale : 5 MB
+        </small>
+
+      </div>
+    </div>
+
+    <!-- Conseils -->
+    <div class="admin-card mt-4">
+      <div class="admin-card-header">
+        <h5 class="admin-card-titre">
+          <i class="bi bi-lightbulb me-2"></i>Conseils
+        </h5>
+      </div>
+      <div class="admin-card-body p-3">
+        <ul class="admin-tips">
+          <li>
+            <i class="bi bi-check2 text-success me-2"></i>
+            Utilisez une image carrée (1:1) pour un meilleur rendu.
+          </li>
+          <li>
+            <i class="bi bi-check2 text-success me-2"></i>
+            Résolution recommandée : 800x800 pixels minimum.
+          </li>
+          <li>
+            <i class="bi bi-check2 text-success me-2"></i>
+            Fond blanc ou transparent de préférence.
+          </li>
+          <li>
+            <i class="bi bi-check2 text-success me-2"></i>
+            Décrivez bien le produit pour booster les ventes.
+          </li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Prévisualisation image avant upload
+  function previewImage(input) {
+    const preview = document.getElementById('imgPreview');
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        preview.src = e.target.result;
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+</script>
+{% endblock %}

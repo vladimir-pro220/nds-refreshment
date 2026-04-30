@@ -1,0 +1,210 @@
+<!--
+FICHIER : templates/client/profil.html
+RÔLE    : Page profil et historique des commandes client
+APPORT  : Affiche les informations personnelles du client et la liste
+          complète de ses commandes avec leurs statuts.
+DÉPENDANCES : base.html, profil.profil, User, Order, login_required_custom
+-->
+{% extends 'base.html' %}
+
+{% block title %}Mon Profil — ND's REFRESHMENT{% endblock %}
+
+{% block content %}
+
+<!-- ═══════════════════════════════════════════════════
+     EN-TÊTE PROFIL
+════════════════════════════════════════════════════ -->
+<section class="page-header py-4">
+  <div class="container">
+    <div class="d-flex align-items-center gap-4">
+      <div class="profil-avatar">
+        <i class="bi bi-person-circle"></i>
+      </div>
+      <div>
+        <h1 class="page-title mb-1">
+          {{ current_user.full_name() }}
+        </h1>
+        <p class="text-muted mb-0">
+          <i class="bi bi-envelope me-2"></i>{{ current_user.email }}
+        </p>
+        <p class="text-muted mb-0">
+          <i class="bi bi-calendar3 me-2"></i>
+          Membre depuis {{ current_user.created_at.strftime('%B %Y') }}
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     CONTENU PROFIL
+════════════════════════════════════════════════════ -->
+<section class="profil-section py-5">
+  <div class="container">
+    <div class="row g-4">
+
+      <!-- ── SIDEBAR ACTIONS ───────────────────── -->
+      <div class="col-lg-3">
+        <div class="profil-sidebar">
+          <h6 class="sidebar-titre">Mon Espace</h6>
+          <ul class="sidebar-nav">
+            <li>
+              <a href="{{ url_for('profil.profil') }}"
+                 class="sidebar-link active">
+                <i class="bi bi-person me-2"></i>Mon Profil
+              </a>
+            </li>
+            <li>
+              <a href="{{ url_for('profil.modifier_profil') }}"
+                 class="sidebar-link">
+                <i class="bi bi-pencil me-2"></i>Modifier mes Infos
+              </a>
+            </li>
+            <li>
+              <a href="{{ url_for('profil.changer_password') }}"
+                 class="sidebar-link">
+                <i class="bi bi-lock me-2"></i>Changer mon Mot de passe
+              </a>
+            </li>
+            <li>
+              <a href="{{ url_for('client.avis') }}"
+                 class="sidebar-link">
+                <i class="bi bi-star me-2"></i>Laisser un Avis
+              </a>
+            </li>
+            <li class="mt-3">
+              <a href="{{ url_for('auth.logout') }}"
+                 class="sidebar-link text-danger">
+                <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Statistiques rapides -->
+        <div class="profil-stats mt-4">
+          <div class="stat-item">
+            <span class="stat-num">{{ orders|length }}</span>
+            <span class="stat-label">Commandes</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-num">
+              {{ orders|selectattr('statut', 'equalto', 'livree')|list|length }}
+            </span>
+            <span class="stat-label">Livrées</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-num">
+              {{ orders|selectattr('statut', 'equalto', 'en_attente')|list|length }}
+            </span>
+            <span class="stat-label">En attente</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── HISTORIQUE COMMANDES ───────────────── -->
+      <div class="col-lg-9">
+        <h4 class="section-title mb-4">
+          <i class="bi bi-bag-check me-2"></i>
+          Historique des Commandes
+        </h4>
+
+        {% if orders %}
+          <div class="commandes-liste">
+            {% for order in orders %}
+              <div class="commande-card">
+
+                <!-- En-tête commande -->
+                <div class="commande-card-header">
+                  <div class="commande-info">
+                    <span class="commande-num">
+                      Commande #{{ order.id }}
+                    </span>
+                    <span class="commande-date text-muted">
+                      <i class="bi bi-calendar3 me-1"></i>
+                      {{ order.created_at.strftime('%d/%m/%Y à %H:%M') }}
+                    </span>
+                  </div>
+                  <div class="commande-statut-wrapper">
+                    <span class="commande-statut statut-{{ order.statut }}">
+                      {% if order.statut == 'en_attente' %}
+                        <i class="bi bi-clock me-1"></i>En attente
+                      {% elif order.statut == 'confirmee' %}
+                        <i class="bi bi-check me-1"></i>Confirmée
+                      {% elif order.statut == 'en_preparation' %}
+                        <i class="bi bi-gear me-1"></i>En préparation
+                      {% elif order.statut == 'livree' %}
+                        <i class="bi bi-check-circle me-1"></i>Livrée
+                      {% elif order.statut == 'annulee' %}
+                        <i class="bi bi-x-circle me-1"></i>Annulée
+                      {% endif %}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Articles de la commande -->
+                <div class="commande-articles">
+                  {% for item in order.items %}
+                    <div class="commande-article">
+                      <img src="{{ url_for('static', filename='uploads/' + item.product.image) }}"
+                           alt="{{ item.product.nom }}"
+                           class="commande-article-img"
+                           onerror="this.src='{{ url_for('static', filename='img/default.jpg') }}'"/>
+                      <div class="commande-article-info">
+                        <span class="commande-article-nom">
+                          {{ item.product.nom }}
+                        </span>
+                        <span class="commande-article-qty text-muted">
+                          x{{ item.quantite }} —
+                          {{ "{:,.0f} FCFA".format(item.prix_unitaire) }} / unité
+                        </span>
+                      </div>
+                      <span class="commande-article-total">
+                        {{ "{:,.0f} FCFA".format(item.sous_total()) }}
+                      </span>
+                    </div>
+                  {% endfor %}
+                </div>
+
+                <!-- Pied commande -->
+                <div class="commande-card-footer">
+                  <div class="commande-adresse text-muted">
+                    <i class="bi bi-geo-alt me-1"></i>
+                    {{ order.adresse_livraison }}
+                  </div>
+                  <div class="commande-total-wrapper">
+                    <span class="commande-total-label">Total :</span>
+                    <strong class="commande-total">
+                      {{ order.formatted_total() }}
+                    </strong>
+                  </div>
+                  <a href="{{ url_for('profil.detail_commande', order_id=order.id) }}"
+                     class="btn-detail-commande">
+                    <i class="bi bi-eye me-1"></i>Détails
+                  </a>
+                </div>
+
+              </div>
+            {% endfor %}
+          </div>
+
+        {% else %}
+          <div class="empty-state text-center py-5">
+            <i class="bi bi-bag-x fs-1 text-muted"></i>
+            <h5 class="mt-3">Aucune commande pour le moment</h5>
+            <p class="text-muted">
+              Vous n'avez pas encore passé de commande.
+            </p>
+            <a href="{{ url_for('client.produits') }}"
+               class="btn-hero-primary mt-3">
+              <i class="bi bi-bag me-2"></i>Découvrir nos Produits
+            </a>
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

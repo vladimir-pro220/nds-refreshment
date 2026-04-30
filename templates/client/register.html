@@ -1,0 +1,268 @@
+<!--
+FICHIER : templates/client/register.html
+RÔLE    : Page d'inscription client
+APPORT  : Formulaire d'inscription sécurisé avec validation côté client,
+          indicateur de force du mot de passe et protection CSRF.
+DÉPENDANCES : base.html, auth.register, User, anonymous_required, is_strong_password
+-->
+{% extends 'base.html' %}
+
+{% block title %}Inscription — ND's REFRESHMENT{% endblock %}
+
+{% block content %}
+
+<section class="auth-section py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-6 col-md-8">
+
+        <!-- Card inscription -->
+        <div class="auth-card">
+
+          <!-- En-tête -->
+          <div class="auth-header text-center mb-4">
+            <div class="auth-logo">
+              <span class="brand-nd">ND's</span>
+              <span class="brand-refresh">REFRESHMENT</span>
+            </div>
+            <h2 class="auth-titre mt-3">Créer un Compte</h2>
+            <p class="auth-subtitle text-muted">
+              Rejoignez la communauté ND's REFRESHMENT
+            </p>
+          </div>
+
+          <!-- Formulaire -->
+          <form action="{{ url_for('auth.register') }}" method="POST"
+                id="formRegister">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+            <!-- Nom & Prénom -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="prenom" class="form-label">
+                  <i class="bi bi-person me-2"></i>Prénom
+                  <span class="text-danger">*</span>
+                </label>
+                <input type="text" name="prenom" id="prenom"
+                       class="form-control auth-input"
+                       placeholder="Votre prénom"
+                       required autofocus/>
+              </div>
+              <div class="col-md-6">
+                <label for="nom" class="form-label">
+                  <i class="bi bi-person me-2"></i>Nom
+                  <span class="text-danger">*</span>
+                </label>
+                <input type="text" name="nom" id="nom"
+                       class="form-control auth-input"
+                       placeholder="Votre nom"
+                       required/>
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div class="mb-3">
+              <label for="email" class="form-label">
+                <i class="bi bi-envelope me-2"></i>Adresse Email
+                <span class="text-danger">*</span>
+              </label>
+              <input type="email" name="email" id="email"
+                     class="form-control auth-input"
+                     placeholder="votre@email.com"
+                     required/>
+              <small class="text-muted">
+                Votre email servira d'identifiant de connexion.
+              </small>
+            </div>
+
+            <!-- Mot de passe -->
+            <div class="mb-3">
+              <label for="password" class="form-label">
+                <i class="bi bi-lock me-2"></i>Mot de passe
+                <span class="text-danger">*</span>
+              </label>
+              <div class="input-group">
+                <input type="password" name="password" id="password"
+                       class="form-control auth-input"
+                       placeholder="Créez un mot de passe fort"
+                       required oninput="checkPasswordStrength(this.value)"/>
+                <button type="button" class="btn btn-toggle-pwd"
+                        id="togglePassword">
+                  <i class="bi bi-eye" id="eyeIcon"></i>
+                </button>
+              </div>
+
+              <!-- Indicateur de force -->
+              <div class="pwd-strength mt-2">
+                <div class="pwd-strength-bar">
+                  <div class="pwd-strength-fill" id="strengthFill"></div>
+                </div>
+                <small class="pwd-strength-label" id="strengthLabel">
+                  Entrez un mot de passe
+                </small>
+              </div>
+
+              <!-- Règles mot de passe -->
+              <div class="pwd-rules mt-2">
+                <small class="pwd-rule" id="rule-length">
+                  <i class="bi bi-x-circle text-danger"></i>
+                  Au moins 8 caractères
+                </small>
+                <small class="pwd-rule" id="rule-upper">
+                  <i class="bi bi-x-circle text-danger"></i>
+                  Une lettre majuscule
+                </small>
+                <small class="pwd-rule" id="rule-lower">
+                  <i class="bi bi-x-circle text-danger"></i>
+                  Une lettre minuscule
+                </small>
+                <small class="pwd-rule" id="rule-digit">
+                  <i class="bi bi-x-circle text-danger"></i>
+                  Un chiffre
+                </small>
+              </div>
+            </div>
+
+            <!-- Confirmation mot de passe -->
+            <div class="mb-4">
+              <label for="confirm_password" class="form-label">
+                <i class="bi bi-lock-fill me-2"></i>Confirmer le mot de passe
+                <span class="text-danger">*</span>
+              </label>
+              <div class="input-group">
+                <input type="password" name="confirm_password"
+                       id="confirm_password"
+                       class="form-control auth-input"
+                       placeholder="Répétez votre mot de passe"
+                       required oninput="checkPasswordMatch()"/>
+                <button type="button" class="btn btn-toggle-pwd"
+                        id="toggleConfirm">
+                  <i class="bi bi-eye" id="eyeIconConfirm"></i>
+                </button>
+              </div>
+              <small class="pwd-match-msg" id="matchMsg"></small>
+            </div>
+
+            <!-- Bouton inscription -->
+            <button type="submit" class="btn-auth w-100" id="btnRegister">
+              <i class="bi bi-person-check me-2"></i>
+              Créer mon Compte
+            </button>
+
+          </form>
+
+          <!-- Séparateur -->
+          <div class="auth-separator my-4">
+            <span>Déjà un compte ?</span>
+          </div>
+
+          <!-- Lien connexion -->
+          <a href="{{ url_for('auth.login') }}"
+             class="btn-auth-secondary w-100">
+            <i class="bi bi-box-arrow-in-right me-2"></i>
+            Se Connecter
+          </a>
+
+          <!-- Retour boutique -->
+          <div class="text-center mt-4">
+            <a href="{{ url_for('client.index') }}"
+               class="text-muted small">
+              <i class="bi bi-arrow-left me-1"></i>
+              Retourner à la boutique
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // ── Afficher / masquer mot de passe ──────────────
+  function togglePwd(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.classList.replace('bi-eye', 'bi-eye-slash');
+    } else {
+      input.type = 'password';
+      icon.classList.replace('bi-eye-slash', 'bi-eye');
+    }
+  }
+
+  document.getElementById('togglePassword').addEventListener('click',
+    () => togglePwd('password', 'eyeIcon'));
+  document.getElementById('toggleConfirm').addEventListener('click',
+    () => togglePwd('confirm_password', 'eyeIconConfirm'));
+
+  // ── Indicateur de force du mot de passe ──────────
+  function checkPasswordStrength(pwd) {
+    const fill = document.getElementById('strengthFill');
+    const label = document.getElementById('strengthLabel');
+
+    const hasLength = pwd.length >= 8;
+    const hasUpper = /[A-Z]/.test(pwd);
+    const hasLower = /[a-z]/.test(pwd);
+    const hasDigit = /[0-9]/.test(pwd);
+
+    // Mise à jour des règles visuelles
+    updateRule('rule-length', hasLength);
+    updateRule('rule-upper', hasUpper);
+    updateRule('rule-lower', hasLower);
+    updateRule('rule-digit', hasDigit);
+
+    // Score de force
+    const score = [hasLength, hasUpper, hasLower, hasDigit]
+                    .filter(Boolean).length;
+
+    const configs = [
+      { width: '0%',   color: '#dee2e6', text: 'Entrez un mot de passe' },
+      { width: '25%',  color: '#dc3545', text: 'Très faible' },
+      { width: '50%',  color: '#fd7e14', text: 'Faible' },
+      { width: '75%',  color: '#ffc107', text: 'Moyen' },
+      { width: '100%', color: '#198754', text: 'Fort ✓' },
+    ];
+
+    const config = configs[score];
+    fill.style.width = config.width;
+    fill.style.backgroundColor = config.color;
+    label.textContent = config.text;
+    label.style.color = config.color;
+  }
+
+  function updateRule(ruleId, valid) {
+    const rule = document.getElementById(ruleId);
+    const icon = rule.querySelector('i');
+    if (valid) {
+      icon.className = 'bi bi-check-circle text-success';
+    } else {
+      icon.className = 'bi bi-x-circle text-danger';
+    }
+  }
+
+  // ── Vérification correspondance mots de passe ────
+  function checkPasswordMatch() {
+    const pwd = document.getElementById('password').value;
+    const confirm = document.getElementById('confirm_password').value;
+    const msg = document.getElementById('matchMsg');
+
+    if (!confirm) {
+      msg.textContent = '';
+      return;
+    }
+
+    if (pwd === confirm) {
+      msg.textContent = '✓ Les mots de passe correspondent';
+      msg.style.color = '#198754';
+    } else {
+      msg.textContent = '✗ Les mots de passe ne correspondent pas';
+      msg.style.color = '#dc3545';
+    }
+  }
+</script>
+{% endblock %}
