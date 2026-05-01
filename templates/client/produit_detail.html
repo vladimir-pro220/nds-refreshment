@@ -1,0 +1,260 @@
+<!--
+FICHIER : templates/client/produit_detail.html
+RÔLE    : Fiche détaillée d'un produit
+APPORT  : Affiche toutes les informations d'un produit, sa promotion active,
+          ses avis clients et le formulaire d'ajout au panier.
+DÉPENDANCES : base.html, client.produit_detail, Product, Review, Promotion
+-->
+{% extends 'base.html' %}
+
+{% block title %}{{ product.nom }} — ND's REFRESHMENT{% endblock %}
+
+{% block content %}
+
+<!-- Fil d'ariane -->
+<section class="breadcrumb-section py-3">
+  <div class="container">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('client.index') }}">Accueil</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('client.produits') }}">Produits</a></li>
+        <li class="breadcrumb-item active">{{ product.nom }}</li>
+      </ol>
+    </nav>
+  </div>
+</section>
+
+<!-- Détail produit -->
+<section class="py-5">
+  <div class="container">
+    <div class="row g-5">
+
+      <!-- Image -->
+      <div class="col-lg-5">
+        <div class="detail-img-wrapper position-relative">
+          {% if promo_active %}
+            <div class="product-badge-promo">{{ promo_active.formatted_pourcentage() }}</div>
+          {% endif %}
+          <img src="{{ url_for('static', filename='uploads/' + product.image) }}"
+               alt="{{ product.nom }}"
+               style="width:100%;border-radius:16px;object-fit:cover;max-height:420px"
+               onerror="this.src='{{ url_for('static', filename='img/default.jpg') }}'"/>
+        </div>
+
+        <!-- Stock -->
+        <div class="mt-3">
+          {% if product.is_available() %}
+            {% if product.stock <= 5 %}
+              <span class="badge bg-warning text-dark">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                Plus que {{ product.stock }} en stock !
+              </span>
+            {% else %}
+              <span class="badge bg-success">
+                <i class="bi bi-check-circle me-1"></i>
+                En stock ({{ product.stock }} disponibles)
+              </span>
+            {% endif %}
+          {% else %}
+            <span class="badge bg-danger">
+              <i class="bi bi-x-circle me-1"></i>Produit épuisé
+            </span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Infos -->
+      <div class="col-lg-7">
+        <span class="product-categorie">{{ product.categorie|capitalize }}</span>
+        <h1 class="section-title mt-1">{{ product.nom }}</h1>
+
+        <!-- Note moyenne -->
+        {% if product.reviews %}
+          <div class="mb-3">
+            {% for i in range(1, 6) %}
+              <i class="bi bi-star{% if i <= product.average_rating() %}-fill{% endif %} text-warning"></i>
+            {% endfor %}
+            <span class="text-muted ms-2">
+              {{ product.average_rating() }}/5 ({{ product.reviews|length }} avis)
+            </span>
+          </div>
+        {% endif %}
+
+        <!-- Prix -->
+        <div class="mb-4">
+          {% if promo_active %}
+            <span class="prix-barre-lg">{{ product.formatted_price() }}</span>
+            <span class="prix-actuel-lg ms-2">{{ promo_active.formatted_prix_promo() }}</span>
+            <div class="mt-1">
+              <small class="text-warning">
+                <i class="bi bi-tag-fill me-1"></i>
+                {{ promo_active.titre }}
+                {% if promo_active.jours_restants() > 0 %}
+                  — encore {{ promo_active.jours_restants() }} jour(s)
+                {% endif %}
+              </small>
+            </div>
+          {% else %}
+            <span class="prix-actuel-lg">{{ product.formatted_price() }}</span>
+          {% endif %}
+        </div>
+
+        <!-- Description -->
+        {% if product.description %}
+          <div class="mb-4">
+            <h6 class="fw-bold">Description</h6>
+            <p class="text-muted">{{ product.description }}</p>
+          </div>
+        {% endif %}
+
+        <!-- Formulaire ajout panier -->
+        {% if product.is_available() %}
+          <form action="{{ url_for('panier.ajouter', product_id=product.id) }}"
+                method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <div class="mb-4">
+              <h6 class="fw-bold">Quantité</h6>
+              <div class="d-flex align-items-center gap-3">
+                <button type="button" class="btn-qty" id="btnMinus">
+                  <i class="bi bi-dash"></i>
+                </button>
+                <input type="number" name="quantite" id="quantiteInput"
+                       class="qty-input text-center"
+                       style="width:70px;border:1.5px solid #e9ecef;border-radius:8px;padding:0.5rem"
+                       value="1" min="1" max="{{ product.stock }}"/>
+                <button type="button" class="btn-qty" id="btnPlus">
+                  <i class="bi bi-plus"></i>
+                </button>
+                <span class="text-muted small">Max : {{ product.stock }}</span>
+              </div>
+            </div>
+            <div class="d-flex gap-3 flex-wrap">
+              <button type="submit" class="btn-hero-primary">
+                <i class="bi bi-bag-plus me-2"></i>Ajouter au Panier
+              </button>
+              <a href="{{ url_for('panier.panier') }}" class="btn-hero-secondary">
+                <i class="bi bi-bag me-2"></i>Voir le Panier
+              </a>
+            </div>
+          </form>
+        {% else %}
+          <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Ce produit est actuellement épuisé. Revenez bientôt !
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Avis clients -->
+<section class="py-5" style="background:var(--nds-off-white)">
+  <div class="container">
+    <h3 class="section-title mb-4">
+      Avis Clients
+      {% if avis %}<span class="fs-5 text-muted">({{ avis|length }})</span>{% endif %}
+    </h3>
+    <div class="row g-4">
+
+      <!-- Liste avis -->
+      <div class="col-lg-8">
+        {% if avis %}
+          {% for review in avis %}
+            <div class="avis-card">
+              <div class="avis-header">
+                <div class="avis-auteur-info">
+                  <div class="avis-avatar">{{ review.auteur.prenom[0]|upper }}</div>
+                  <div>
+                    <strong>{{ review.auteur.full_name() }}</strong>
+                    <small class="d-block text-muted">{{ review.product.nom }}</small>
+                  </div>
+                </div>
+                <span class="avis-stars">{{ review.stars() }}</span>
+              </div>
+              {% if review.commentaire %}
+                <p class="avis-texte">{{ review.commentaire }}</p>
+              {% endif %}
+              <small class="text-muted">
+                {{ review.created_at.strftime('%d/%m/%Y') }}
+              </small>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty-state text-center py-4">
+            <i class="bi bi-chat-square-text fs-2 text-muted"></i>
+            <p class="mt-2 text-muted">Aucun avis pour ce produit. Soyez le premier !</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Formulaire avis -->
+      <div class="col-lg-4">
+        {% if current_user.is_authenticated %}
+          {% if deja_avis %}
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle me-2"></i>
+              Vous avez déjà laissé un avis sur ce produit.
+            </div>
+          {% else %}
+            <div class="avis-form-card">
+              <h5 class="mb-4">Laisser un Avis</h5>
+              <form action="{{ url_for('client.avis') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <input type="hidden" name="product_id" value="{{ product.id }}"/>
+                <div class="mb-3">
+                  <label class="form-label">Votre note</label>
+                  <div class="star-rating">
+                    {% for note, label in notes %}
+                      <input type="radio" name="note" id="note{{ note }}"
+                             value="{{ note }}" class="star-input" required/>
+                      <label for="note{{ note }}" class="star-label"
+                             title="{{ label }}">★</label>
+                    {% endfor %}
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Commentaire (optionnel)</label>
+                  <textarea name="commentaire" class="form-control" rows="4"
+                            placeholder="Partagez votre expérience..."></textarea>
+                </div>
+                <button type="submit" class="btn-auth w-100">
+                  <i class="bi bi-send me-2"></i>Soumettre mon Avis
+                </button>
+              </form>
+            </div>
+          {% endif %}
+        {% else %}
+          <div class="avis-login-card text-center">
+            <i class="bi bi-person-lock fs-2 mb-3"></i>
+            <p>Connectez-vous pour laisser un avis.</p>
+            <a href="{{ url_for('auth.login') }}" class="btn-auth w-100">
+              <i class="bi bi-box-arrow-in-right me-2"></i>Se Connecter
+            </a>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const btnMinus = document.getElementById('btnMinus');
+  const btnPlus = document.getElementById('btnPlus');
+  const qtyInput = document.getElementById('quantiteInput');
+  if (btnMinus && btnPlus && qtyInput) {
+    btnMinus.addEventListener('click', () => {
+      if (parseInt(qtyInput.value) > 1) qtyInput.value = parseInt(qtyInput.value) - 1;
+    });
+    btnPlus.addEventListener('click', () => {
+      if (parseInt(qtyInput.value) < parseInt(qtyInput.max))
+        qtyInput.value = parseInt(qtyInput.value) + 1;
+    });
+  }
+</script>
+{% endblock %}

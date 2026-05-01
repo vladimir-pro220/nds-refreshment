@@ -42,13 +42,17 @@ def register():
             flash("Cet email est déjà utilisé.", "danger")
             return render_template("client/register.html")
 
+        # Création du compte
         user = User(nom=nom, prenom=prenom, email=email, role="client")
         user.set_password(password)
         db.session.add(user)
         db.session.commit()
 
-        flash("Compte créé avec succès ! Vous pouvez vous connecter.", "success")
-        return redirect(url_for("auth.login"))
+        # Connexion automatique après inscription
+        login_user(user, remember=False)
+
+        flash(f"Bienvenue {user.prenom} ! Votre compte a été créé avec succès.", "success")
+        return redirect(url_for("client.index"))
 
     return render_template("client/register.html")
 

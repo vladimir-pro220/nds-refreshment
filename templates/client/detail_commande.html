@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Commande #{{ order.id }} — ND's REFRESHMENT{% endblock %}
+{% block content %}
+<section class="py-5" style="background:var(--nds-off-white)">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="page-title">Commande #{{ order.id }}</h2>
+      <a href="{{ url_for('profil.profil') }}" class="btn-hero-secondary">
+        <i class="bi bi-arrow-left me-2"></i>Retour
+      </a>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <div class="auth-card mb-4">
+          <h5 class="mb-4"><i class="bi bi-bag me-2"></i>Articles</h5>
+          {% for item in order.items %}
+            <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom">
+              <img src="{{ url_for('static', filename='uploads/' + item.product.image) }}"
+                   alt="{{ item.product.nom }}"
+                   style="width:60px;height:60px;object-fit:cover;border-radius:8px"
+                   onerror="this.src='{{ url_for('static', filename='img/default.jpg') }}'"/>
+              <div class="flex-grow-1">
+                <strong>{{ item.product.nom }}</strong>
+                <small class="d-block text-muted">x{{ item.quantite }} — {{ "{:,.0f} FCFA".format(item.prix_unitaire) }} / unité</small>
+              </div>
+              <strong>{{ "{:,.0f} FCFA".format(item.sous_total()) }}</strong>
+            </div>
+          {% endfor %}
+          <div class="d-flex justify-content-between mt-3">
+            <strong>Total</strong>
+            <strong class="text-success fs-5">{{ order.formatted_total() }}</strong>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="auth-card">
+          <h5 class="mb-3">Informations</h5>
+          <p><strong>Statut :</strong>
+            <span class="statut-{{ order.statut }} px-2 py-1 rounded ms-2">
+              {{ order.statut|replace('_',' ')|capitalize }}
+            </span>
+          </p>
+          <p><strong>Date :</strong>
+            {{ order.created_at.strftime('%d/%m/%Y à %H:%M') }}
+          </p>
+          <p><strong>Adresse :</strong>
+            {{ order.adresse_livraison }}
+          </p>
+          <p><strong>Téléphone :</strong>
+            {{ order.telephone }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

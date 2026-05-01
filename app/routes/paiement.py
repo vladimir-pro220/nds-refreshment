@@ -61,7 +61,7 @@ def paiement():
         telephone = request.form.get("telephone", "").strip()
         note_client = request.form.get("note_client", "").strip()
 
-        # Vérifications
+        # Vérifications champs obligatoires
         if not adresse or not telephone:
             flash("L'adresse de livraison et le téléphone sont obligatoires.", "danger")
             return render_template(
@@ -74,7 +74,10 @@ def paiement():
         # Vérification stock avant création commande
         for product_id, item in cart.items():
             product = products.get(int(product_id))
-            if not product or not product.is_available():
+            if not product:
+                flash("Un produit de votre panier n'existe plus.", "danger")
+                return redirect(url_for("panier.panier"))
+            if not product.is_available():
                 flash(f"Le produit {product.nom} n'est plus disponible.", "danger")
                 return redirect(url_for("panier.panier"))
             if item["quantite"] > product.stock:
@@ -91,7 +94,7 @@ def paiement():
             note_client=note_client if note_client else None
         )
         db.session.add(order)
-        db.session.flush()  # Génère l'id de la commande sans commit
+        db.session.flush()
 
         # Création des lignes de commande et mise à jour du stock
         for product_id, item in cart.items():
