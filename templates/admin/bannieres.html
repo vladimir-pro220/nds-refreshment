@@ -1,0 +1,103 @@
+<!--
+FICHIER : templates/admin/bannieres.html
+RÔLE    : Gestion des bannières publicitaires
+APPORT  : Liste toutes les bannières avec actions modifier/supprimer
+          et accès rapide à l'ajout d'une nouvelle bannière.
+DÉPENDANCES : admin_base.html, admin.bannieres, Banner
+-->
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}Bannières — Administration ND's REFRESHMENT{% endblock %}
+
+{% block content %}
+
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-titre">
+      <i class="bi bi-image-fill me-2"></i>Gestion des Bannières
+    </h1>
+    <p class="text-muted">{{ bannieres|length }} bannière(s) au total</p>
+  </div>
+  <a href="{{ url_for('admin.nouvelle_banniere') }}"
+     class="btn-admin-primary">
+    <i class="bi bi-plus-lg me-2"></i>Nouvelle Bannière
+  </a>
+</div>
+
+<div class="admin-card">
+  {% if bannieres %}
+    <div class="table-responsive">
+      <table class="table admin-table">
+        <thead>
+          <tr>
+            <th>Image</th>
+            <th>Titre</th>
+            <th>Ordre</th>
+            <th>Produit lié</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for banniere in bannieres %}
+            <tr>
+              <td>
+                <img src="{{ url_for('static', filename='uploads/' + banniere.image) }}"
+                     alt="{{ banniere.titre }}"
+                     class="admin-product-img"
+                     onerror="this.src='{{ url_for('static', filename='img/default.jpg') }}'"/>
+              </td>
+              <td><strong>{{ banniere.titre }}</strong></td>
+              <td>
+                <span class="badge bg-secondary">{{ banniere.ordre }}</span>
+              </td>
+              <td>
+                {% if banniere.product %}
+                  <small>{{ banniere.product.nom }}</small>
+                {% else %}
+                  <small class="text-muted">—</small>
+                {% endif %}
+              </td>
+              <td>
+                {% if banniere.is_active() %}
+                  <span class="admin-statut statut-livree">
+                    <i class="bi bi-eye me-1"></i>Active
+                  </span>
+                {% else %}
+                  <span class="admin-statut statut-annulee">
+                    <i class="bi bi-eye-slash me-1"></i>Inactive
+                  </span>
+                {% endif %}
+              </td>
+              <td>
+                <form action="{{ url_for('admin.supprimer_banniere',
+                               banner_id=banniere.id) }}"
+                      method="POST" class="d-inline">
+                  <input type="hidden" name="csrf_token"
+                         value="{{ csrf_token() }}"/>
+                  <button type="submit"
+                          class="btn-admin-sm btn-delete"
+                          title="Supprimer"
+                          onclick="return confirm('Supprimer cette bannière ?')">
+                    <i class="bi bi-trash3"></i>
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state text-center py-5">
+      <i class="bi bi-image fs-1 text-muted"></i>
+      <h5 class="mt-3">Aucune bannière créée</h5>
+      <a href="{{ url_for('admin.nouvelle_banniere') }}"
+         class="btn-admin-primary mt-3">
+        <i class="bi bi-plus-lg me-2"></i>Créer une Bannière
+      </a>
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}

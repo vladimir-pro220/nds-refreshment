@@ -833,3 +833,23 @@ DÉPENDANCES : Bootstrap 5, Bootstrap Icons
     font-size: 1.4rem;
   }
 }
+
+/* Filtres admin */
+.btn-filtre-admin {
+  background: var(--admin-light);
+  color: var(--admin-text);
+  border: 1px solid var(--admin-border);
+  border-radius: 20px;
+  padding: 0.3rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: var(--admin-transition);
+}
+
+.btn-filtre-admin:hover,
+.btn-filtre-admin.active {
+  background: var(--admin-green);
+  color: white;
+  border-color: var(--admin-green);
+}

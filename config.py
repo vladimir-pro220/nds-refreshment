@@ -11,8 +11,10 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "changez-moi-en-production")
 
     # ── Base de données ────────────────────────────────────
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     SQLALCHEMY_DATABASE_URI = os.getenv(
-        "DATABASE_URI", "sqlite:///app/database.db"
+        "DATABASE_URI",
+        f"sqlite:///{os.path.join(BASE_DIR, 'app', 'database.db')}"
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 

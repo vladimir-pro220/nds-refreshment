@@ -1,0 +1,129 @@
+<!--
+FICHIER : templates/admin/nouvelle_banniere.html
+RÔLE    : Formulaire d'ajout d'une nouvelle bannière
+APPORT  : Permet à l'admin d'ajouter une bannière avec titre, image,
+          ordre d'affichage et lien vers un produit optionnel.
+DÉPENDANCES : admin_base.html, admin.nouvelle_banniere, Banner, Product
+-->
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}Nouvelle Bannière — Administration ND's REFRESHMENT{% endblock %}
+
+{% block content %}
+
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-titre">
+      <i class="bi bi-image-fill me-2"></i>Nouvelle Bannière (Publicité)
+    </h1>
+  </div>
+  <a href="{{ url_for('admin.bannieres') }}" class="btn-admin-secondary">
+    <i class="bi bi-arrow-left me-2"></i>Retour
+  </a>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="admin-card">
+      <div class="admin-card-body p-4">
+        <form action="{{ url_for('admin.nouvelle_banniere') }}"
+              method="POST" enctype="multipart/form-data"
+              id="formBanniere">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+          <div class="mb-3">
+            <label class="admin-label">
+              Titre <span class="text-danger">*</span>
+            </label>
+            <input type="text" name="titre" class="form-control admin-input"
+                   placeholder="Ex: Promotion Ananas Gingembre" required/>
+          </div>
+
+          <div class="mb-3">
+            <label class="admin-label">Description</label>
+            <textarea name="description" class="form-control admin-input"
+                      rows="3" placeholder="Description optionnelle...">
+            </textarea>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="admin-label">Ordre d'affichage</label>
+              <input type="number" name="ordre"
+                     class="form-control admin-input"
+                     value="1" min="1"/>
+            </div>
+            <div class="col-md-6">
+              <label class="admin-label">Produit lié (optionnel)</label>
+              <select name="lien_produit_id" class="form-select admin-input">
+                <option value="">Aucun produit lié</option>
+                {% for product in produits %}
+                  <option value="{{ product.id }}">{{ product.nom }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <div class="form-check form-switch">
+              <input type="checkbox" name="active" id="active"
+                     class="form-check-input" checked/>
+              <label for="active" class="form-check-label">
+                Bannière active
+              </label>
+            </div>
+          </div>
+
+          <div class="d-flex gap-3">
+            <button type="submit" class="btn-admin-primary">
+              <i class="bi bi-check-circle me-2"></i>Ajouter la Bannière
+            </button>
+            <a href="{{ url_for('admin.bannieres') }}"
+               class="btn-admin-secondary">Annuler</a>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <h5 class="admin-card-titre">
+          <i class="bi bi-image me-2"></i>Image
+          <span class="text-danger">*</span>
+        </h5>
+      </div>
+      <div class="admin-card-body p-4">
+        <div class="img-preview-wrapper mb-3">
+          <img id="imgPreview"
+               src="{{ url_for('static', filename='img/default.jpg') }}"
+               alt="Prévisualisation" class="img-preview"/>
+        </div>
+        <input type="file" name="image" class="form-control admin-input"
+               accept=".png,.jpg,.jpeg,.webp"
+               form="formBanniere"
+               onchange="previewImage(this)" required/>
+        <small class="text-muted d-block mt-2">
+          Format recommandé : 1200x400px — Max 5MB
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function previewImage(input) {
+    const preview = document.getElementById('imgPreview');
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => { preview.src = e.target.result; };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+</script>
+{% endblock %}

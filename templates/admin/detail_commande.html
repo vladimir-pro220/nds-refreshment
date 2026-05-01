@@ -1,0 +1,174 @@
+<!--
+FICHIER : templates/admin/detail_commande.html
+RÔLE    : Détail d'une commande avec changement de statut
+APPORT  : Affiche tous les détails d'une commande et permet à l'admin
+          de changer son statut.
+DÉPENDANCES : admin_base.html, admin.detail_commande, Order, STATUTS_COMMANDE
+-->
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}Commande #{{ order.id }} — Administration{% endblock %}
+
+{% block content %}
+
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-titre">
+      <i class="bi bi-receipt me-2"></i>Commande #{{ order.id }}
+    </h1>
+    <p class="text-muted">
+      Passée le {{ order.created_at.strftime('%d/%m/%Y à %H:%M') }}
+    </p>
+  </div>
+  <a href="{{ url_for('admin.commandes') }}" class="btn-admin-secondary">
+    <i class="bi bi-arrow-left me-2"></i>Retour aux Commandes
+  </a>
+</div>
+
+<div class="row g-4">
+
+  <!-- Détail articles -->
+  <div class="col-lg-8">
+    <div class="admin-card mb-4">
+      <div class="admin-card-header">
+        <h5 class="admin-card-titre">
+          <i class="bi bi-bag me-2"></i>Articles Commandés
+        </h5>
+      </div>
+      <div class="table-responsive">
+        <table class="table admin-table">
+          <thead>
+            <tr>
+              <th>Produit</th>
+              <th class="text-center">Quantité</th>
+              <th class="text-center">Prix unitaire</th>
+              <th class="text-center">Sous-total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in order.items %}
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <img src="{{ url_for('static', filename='uploads/' + item.product.image) }}"
+                         alt="{{ item.product.nom }}"
+                         class="admin-product-img"
+                         onerror="this.src='{{ url_for('static', filename='img/default.jpg') }}'"/>
+                    <strong>{{ item.product.nom }}</strong>
+                  </div>
+                </td>
+                <td class="text-center">{{ item.quantite }}</td>
+                <td class="text-center">
+                  {{ "{:,.0f} FCFA".format(item.prix_unitaire) }}
+                </td>
+                <td class="text-center">
+                  <strong>{{ "{:,.0f} FCFA".format(item.sous_total()) }}</strong>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3" class="text-end fw-bold">Total :</td>
+              <td class="text-center">
+                <strong class="text-success fs-5">
+                  {{ order.formatted_total() }}
+                </strong>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- Infos livraison -->
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <h5 class="admin-card-titre">
+          <i class="bi bi-truck me-2"></i>Informations de Livraison
+        </h5>
+      </div>
+      <div class="admin-card-body p-4">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="admin-label">Adresse de livraison</label>
+            <p>{{ order.adresse_livraison or '—' }}</p>
+          </div>
+          <div class="col-md-6">
+            <label class="admin-label">Téléphone</label>
+            <p>{{ order.telephone or '—' }}</p>
+          </div>
+          {% if order.note_client %}
+            <div class="col-12">
+              <label class="admin-label">Note du client</label>
+              <p class="fst-italic">« {{ order.note_client }} »</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar statut + client -->
+  <div class="col-lg-4">
+
+    <!-- Changer statut -->
+    <div class="admin-card mb-4">
+      <div class="admin-card-header">
+        <h5 class="admin-card-titre">
+          <i class="bi bi-arrow-repeat me-2"></i>Statut de la Commande
+        </h5>
+      </div>
+      <div class="admin-card-body p-4">
+        <div class="mb-3">
+          <span class="admin-statut statut-{{ order.statut }} fs-6">
+            Statut actuel : {{ order.statut|replace('_', ' ')|capitalize }}
+          </span>
+        </div>
+        <form action="{{ url_for('admin.changer_statut', order_id=order.id) }}"
+              method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <div class="mb-3">
+            <label class="admin-label">Nouveau statut</label>
+            <select name="statut" class="form-select admin-input">
+              {% for valeur, label in statuts %}
+                <option value="{{ valeur }}"
+                  {% if valeur == order.statut %}selected{% endif %}>
+                  {{ label }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="btn-admin-primary w-100">
+            <i class="bi bi-check-circle me-2"></i>
+            Mettre à jour
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Infos client -->
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <h5 class="admin-card-titre">
+          <i class="bi bi-person me-2"></i>Client
+        </h5>
+      </div>
+      <div class="admin-card-body p-4">
+        <p class="mb-1">
+          <strong>{{ order.client.full_name() }}</strong>
+        </p>
+        <p class="text-muted small mb-1">
+          <i class="bi bi-envelope me-1"></i>{{ order.client.email }}
+        </p>
+        <p class="text-muted small">
+          <i class="bi bi-calendar3 me-1"></i>
+          Membre depuis {{ order.client.created_at.strftime('%d/%m/%Y') }}
+        </p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

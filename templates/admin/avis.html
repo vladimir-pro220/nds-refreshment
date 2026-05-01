@@ -1,0 +1,131 @@
+<!--
+FICHIER : templates/admin/avis.html
+RÔLE    : Gestion des avis clients
+APPORT  : Liste tous les avis avec filtre par statut et actions
+          d'approbation ou suppression.
+DÉPENDANCES : admin_base.html, admin.avis, Review
+-->
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}Avis Clients — Administration ND's REFRESHMENT{% endblock %}
+
+{% block content %}
+
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-titre">
+      <i class="bi bi-star-fill me-2"></i>Avis Clients
+    </h1>
+  </div>
+</div>
+
+<!-- Filtres -->
+<div class="admin-card mb-4">
+  <div class="admin-card-body p-3">
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="{{ url_for('admin.avis') }}"
+         class="btn-filtre-admin {% if filtre == 'tous' %}active{% endif %}">
+        Tous
+      </a>
+      <a href="{{ url_for('admin.avis', filtre='en_attente') }}"
+         class="btn-filtre-admin {% if filtre == 'en_attente' %}active{% endif %}">
+        En attente
+      </a>
+      <a href="{{ url_for('admin.avis', filtre='approuves') }}"
+         class="btn-filtre-admin {% if filtre == 'approuves' %}active{% endif %}">
+        Approuvés
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Liste avis -->
+<div class="admin-card">
+  {% if avis.items %}
+    <div class="table-responsive">
+      <table class="table admin-table">
+        <thead>
+          <tr>
+            <th>Client</th>
+            <th>Produit</th>
+            <th>Note</th>
+            <th>Commentaire</th>
+            <th>Statut</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for review in avis.items %}
+            <tr>
+              <td>
+                <strong>{{ review.auteur.full_name() }}</strong>
+              </td>
+              <td>{{ review.product.nom }}</td>
+              <td>
+                <span class="text-warning">{{ review.stars() }}</span>
+              </td>
+              <td>
+                <small>
+                  {{ review.commentaire|truncate(60) if review.commentaire else '—' }}
+                </small>
+              </td>
+              <td>
+                {% if review.approuve %}
+                  <span class="admin-statut statut-livree">
+                    <i class="bi bi-check-circle me-1"></i>Approuvé
+                  </span>
+                {% else %}
+                  <span class="admin-statut statut-en_attente">
+                    <i class="bi bi-clock me-1"></i>En attente
+                  </span>
+                {% endif %}
+              </td>
+              <td>
+                <small class="text-muted">
+                  {{ review.created_at.strftime('%d/%m/%Y') }}
+                </small>
+              </td>
+              <td>
+                <div class="d-flex gap-2">
+                  {% if not review.approuve %}
+                    <form action="{{ url_for('admin.approuver_avis',
+                                   review_id=review.id) }}"
+                          method="POST">
+                      <input type="hidden" name="csrf_token"
+                             value="{{ csrf_token() }}"/>
+                      <button type="submit"
+                              class="btn-admin-sm btn-edit"
+                              title="Approuver">
+                        <i class="bi bi-check-lg"></i>
+                      </button>
+                    </form>
+                  {% endif %}
+                  <form action="{{ url_for('admin.supprimer_avis',
+                                 review_id=review.id) }}"
+                        method="POST">
+                    <input type="hidden" name="csrf_token"
+                           value="{{ csrf_token() }}"/>
+                    <button type="submit"
+                            class="btn-admin-sm btn-delete"
+                            title="Supprimer"
+                            onclick="return confirm('Supprimer cet avis ?')">
+                      <i class="bi bi-trash3"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state text-center py-5">
+      <i class="bi bi-star fs-1 text-muted"></i>
+      <h5 class="mt-3">Aucun avis trouvé</h5>
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}

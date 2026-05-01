@@ -6,7 +6,11 @@ from app.extensions import db, login_manager, bcrypt, migrate, csrf
 def create_app(config_name="development"):
     """Factory function — crée et configure l'application Flask."""
 
-    app = Flask(__name__)
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    app = Flask(__name__,
+                template_folder=os.path.join(BASE_DIR, 'templates'),
+                static_folder=os.path.join(BASE_DIR, 'static'))
 
     # ── Chargement de la configuration ─────────────────
     app.config.from_object(config[config_name])

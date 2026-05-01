@@ -1,0 +1,113 @@
+<!--
+FICHIER : templates/admin/promotions.html
+RÔLE    : Gestion des promotions produits
+APPORT  : Liste toutes les promotions avec leur statut actif/inactif
+          et accès à la création d'une nouvelle promotion.
+DÉPENDANCES : admin_base.html, admin.promotions, Promotion
+-->
+{% extends 'admin/admin_base.html' %}
+
+{% block title %}Promotions — Administration ND's REFRESHMENT{% endblock %}
+
+{% block content %}
+
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-page-titre">
+      <i class="bi bi-tag-fill me-2"></i>Gestion des Promotions
+    </h1>
+    <p class="text-muted">{{ promotions|length }} promotion(s) au total</p>
+  </div>
+  <a href="{{ url_for('admin.nouvelle_promotion') }}"
+     class="btn-admin-primary">
+    <i class="bi bi-plus-lg me-2"></i>Nouvelle Promotion
+  </a>
+</div>
+
+<div class="admin-card">
+  {% if promotions %}
+    <div class="table-responsive">
+      <table class="table admin-table">
+        <thead>
+          <tr>
+            <th>Titre</th>
+            <th>Produit</th>
+            <th>Réduction</th>
+            <th>Prix promo</th>
+            <th>Période</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for promo in promotions %}
+            <tr>
+              <td><strong>{{ promo.titre }}</strong></td>
+              <td>{{ promo.product.nom }}</td>
+              <td>
+                <span class="badge bg-danger fs-6">
+                  {{ promo.formatted_pourcentage() }}
+                </span>
+              </td>
+              <td>
+                <span class="text-success fw-bold">
+                  {{ promo.formatted_prix_promo() }}
+                </span>
+                <small class="d-block text-muted text-decoration-line-through">
+                  {{ promo.product.formatted_price() }}
+                </small>
+              </td>
+              <td>
+                <small class="text-muted">
+                  {{ promo.date_debut.strftime('%d/%m/%Y') }} →
+                  {{ promo.date_fin.strftime('%d/%m/%Y') }}
+                </small>
+              </td>
+              <td>
+                {% if promo.is_active() %}
+                  <span class="admin-statut statut-livree">
+                    <i class="bi bi-check-circle me-1"></i>Active
+                    <small>({{ promo.jours_restants() }}j)</small>
+                  </span>
+                {% elif promo.active %}
+                  <span class="admin-statut statut-en_attente">
+                    <i class="bi bi-clock me-1"></i>En attente
+                  </span>
+                {% else %}
+                  <span class="admin-statut statut-annulee">
+                    <i class="bi bi-x-circle me-1"></i>Inactive
+                  </span>
+                {% endif %}
+              </td>
+              <td>
+                <form action="{{ url_for('admin.supprimer_promotion',
+                               promotion_id=promo.id) }}"
+                      method="POST">
+                  <input type="hidden" name="csrf_token"
+                         value="{{ csrf_token() }}"/>
+                  <button type="submit"
+                          class="btn-admin-sm btn-delete"
+                          title="Supprimer"
+                          onclick="return confirm('Supprimer cette promotion ?')">
+                    <i class="bi bi-trash3"></i>
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state text-center py-5">
+      <i class="bi bi-tag fs-1 text-muted"></i>
+      <h5 class="mt-3">Aucune promotion créée</h5>
+      <a href="{{ url_for('admin.nouvelle_promotion') }}"
+         class="btn-admin-primary mt-3">
+        <i class="bi bi-plus-lg me-2"></i>Créer une Promotion
+      </a>
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}
